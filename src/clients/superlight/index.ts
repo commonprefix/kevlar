@@ -9,15 +9,14 @@ import {
 import { MerkleVerify } from './merkle-tree.js';
 import { MerkleMountainVerify, Peaks } from './merkle-mountain-range.js';
 import { BaseClient } from '../base-client.js';
-import { ClientConfig } from '../types.js';
+import { ClientConfig, ProverInfo } from '../types.js';
 import { IProver } from './iprover.js';
-import { DEFAULT_TREE_DEGREE } from '../constants';
+import { DEFAULT_TREE_DEGREE } from '../constants.js';
 
-export type ProverInfo = {
+type ProverInfoSL = {
   root: Uint8Array;
   peaks: Peaks;
   index: number;
-  syncCommittee?: Uint8Array[];
 };
 
 export class SuperlightClient extends BaseClient {
@@ -25,8 +24,12 @@ export class SuperlightClient extends BaseClient {
   merkleMountainVerify: MerkleMountainVerify;
   treeDegree: number;
 
-  constructor(config: ClientConfig, protected provers: IProver[]) {
-    super(config);
+  constructor(
+    config: ClientConfig,
+    beaconChainAPIURL: string,
+    protected provers: IProver[],
+  ) {
+    super(config, beaconChainAPIURL);
     this.treeDegree = config.n || DEFAULT_TREE_DEGREE;
     this.merkleVerify = new MerkleVerify(digest, config.n);
     this.merkleMountainVerify = new MerkleMountainVerify(digest, config.n);
@@ -218,7 +221,9 @@ export class SuperlightClient extends BaseClient {
   }
 
   // returns the prover info of the honest provers
-  protected async tournament(proverInfos: ProverInfo[]): Promise<ProverInfo[]> {
+  protected async tournament(
+    proverInfos: ProverInfoSL[],
+  ): Promise<ProverInfoSL[]> {
     let winners = [proverInfos[0]];
     for (let i = 1; i < proverInfos.length; i++) {
       // Consider one of the winner for thi current round
@@ -255,7 +260,7 @@ export class SuperlightClient extends BaseClient {
 
   // returns the prover info containing the current sync
   // committee and prover index of the honest provers
-  async sync(): Promise<ProverInfo[]> {
+  protected async syncFromGenesis(): Promise<ProverInfo[]> {
     // get the tree size by currentPeriod - genesisPeriod
     const currentPeriod = this.getCurrentPeriod();
     const genesisPeriod = this.genesisPeriod;
@@ -296,7 +301,7 @@ export class SuperlightClient extends BaseClient {
       if (syncCommittee) {
         return [
           {
-            ...winner,
+            index: winner.index,
             syncCommittee,
           },
         ];

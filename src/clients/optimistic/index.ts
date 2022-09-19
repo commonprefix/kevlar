@@ -1,20 +1,23 @@
 import { concatUint8Array, isUint8ArrayEq, smallHexStr } from '../../utils.js';
 import { BaseClient } from '../base-client.js';
-import { ClientConfig } from '../types.js';
+import { ClientConfig, ProverInfo } from '../types.js';
 import { IProver } from './iprover.js';
-import { DEFAULT_BATCH_SIZE } from '../constants';
+import { DEFAULT_BATCH_SIZE } from '../constants.js';
 
-export type ProverInfo = {
+export type ProverInfoL = {
   syncCommitteeHash: Uint8Array;
-  syncCommittee?: Uint8Array[];
   index: number;
 };
 
 export class OptimisticLightClient extends BaseClient {
   batchSize: number;
 
-  constructor(config: ClientConfig, protected provers: IProver[]) {
-    super(config);
+  constructor(
+    config: ClientConfig,
+    beaconChainAPIURL: string,
+    protected provers: IProver[],
+  ) {
+    super(config, beaconChainAPIURL);
     this.batchSize = config.n || DEFAULT_BATCH_SIZE;
   }
 
@@ -52,8 +55,8 @@ export class OptimisticLightClient extends BaseClient {
   }
 
   async fight(
-    proverInfo1: ProverInfo,
-    proverInfo2: ProverInfo,
+    proverInfo1: ProverInfoL,
+    proverInfo2: ProverInfoL,
     period: number,
     prevCommitteeHash: Uint8Array | null,
   ): Promise<boolean> {
@@ -104,7 +107,7 @@ export class OptimisticLightClient extends BaseClient {
   }
 
   async tournament(
-    proverInfos: ProverInfo[],
+    proverInfos: ProverInfoL[],
     period: number,
     lastCommitteeHash: Uint8Array | null,
   ) {
@@ -149,7 +152,7 @@ export class OptimisticLightClient extends BaseClient {
 
   // returns the prover info containing the current sync
   // committee and prover index of the first honest prover
-  async sync(): Promise<ProverInfo> {
+  protected async syncFromGenesis(): Promise<ProverInfo[]> {
     // get the tree size by currentPeriod - genesisPeriod
     const currentPeriod = this.getCurrentPeriod();
     let startPeriod = this.genesisPeriod;
@@ -158,7 +161,7 @@ export class OptimisticLightClient extends BaseClient {
     );
 
     let lastCommitteeHash: Uint8Array | null = null;
-    let proverInfos: ProverInfo[] = this.provers.map((_, i) => ({
+    let proverInfos: ProverInfoL[] = this.provers.map((_, i) => ({
       index: i,
       syncCommitteeHash: new Uint8Array(),
     }));
@@ -198,7 +201,11 @@ export class OptimisticLightClient extends BaseClient {
     const committee = await this.provers[proverInfos[0].index].getLeaf(
       'latest',
     );
-    proverInfos[0].syncCommittee = committee;
-    return proverInfos[0];
+    return [
+      {
+        index: proverInfos[0].index,
+        syncCommittee: committee,
+      },
+    ];
   }
 }

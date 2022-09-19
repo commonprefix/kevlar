@@ -591,6 +591,13 @@
     "@types/node" "*"
     "@types/responselike" "*"
 
+"@types/dotenv@8.2.0":
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/@types/dotenv/-/dotenv-8.2.0.tgz#5cd64710c3c98e82d9d15844375a33bf1b45d053"
+  integrity sha512-ylSC9GhfRH7m1EUXBXofhgx4lUWmFeQDINW5oLuS+gxWdfUeW4zJdeVTYVkexEW+e2VUvlZR2kGnGGipAWR7kw==
+  dependencies:
+    dotenv "*"
+
 "@types/http-cache-semantics@*":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@types/http-cache-semantics/-/http-cache-semantics-4.0.1.tgz#0ea7b61496902b95890dc4c3a116b60cb8dae812"
@@ -1534,6 +1541,11 @@ dom-walk@^0.1.0:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/dom-walk/-/dom-walk-0.1.2.tgz#0c548bef048f4d1f2a97249002236060daa3fd84"
   integrity sha512-6QvTW9mrGeIegrFXdtQi9pk7O/nSK6lSdXW2eqUspN5LWD7UTji2Fqw5V2YLjBpHEoU9Xl/eUWNpDeZvoyOv2w==
+
+dotenv@*, dotenv@16.0.2:
+  version "16.0.2"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.0.2.tgz#0b0f8652c016a3858ef795024508cddc4bffc5bf"
+  integrity sha512-JvpYKUmzQhYoIFgK2MOnF3bciIZoItIIoryihy0rIA+H4Jy0FmgyKYAHCTN98P5ybGSJcIFbh6QKeJdtZd1qhA==
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"
@@ -3227,9 +3239,9 @@ path-to-regexp@0.1.7:
   resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-0.1.7.tgz#df604178005f522f15eb4490e7247a1bfaa67f8c"
   integrity sha512-5DFkuoqlv1uYQKxy8omFBeJPQcdoE07Kv2sferDCrAq1ohOU+MSDswDIbnx3YAM60qIOnYa53wBhXW0EbMonrQ==
 
-"patronum@https://github.com/shresthagrawal/patronum#be1f7aa19938128dc0dfeee4ea938da8f7ae71ec":
+"patronum@https://github.com/shresthagrawal/patronum#0fce114f24f0299c00c24715d9b0a41335cadb17":
   version "0.0.1"
-  resolved "https://github.com/shresthagrawal/patronum#be1f7aa19938128dc0dfeee4ea938da8f7ae71ec"
+  resolved "https://github.com/shresthagrawal/patronum#0fce114f24f0299c00c24715d9b0a41335cadb17"
   dependencies:
     "@ethereumjs/block" "4.0.0-beta.3"
     "@ethereumjs/blockchain" "6.0.0-beta.3"

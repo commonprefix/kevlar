@@ -1,19 +1,18 @@
 import { concatUint8Array, isUint8ArrayEq, smallHexStr } from '../../utils.js';
 import { BaseClient } from '../base-client.js';
-import { ClientConfig } from '../types.js';
+import { ClientConfig, ProverInfo } from '../types.js';
 import { IProver } from './iprover.js';
-import { DEFAULT_BATCH_SIZE } from '../constants';
-
-export type ProverInfo = {
-  syncCommittee: Uint8Array[];
-  index: number;
-};
+import { DEFAULT_BATCH_SIZE } from '../constants.js';
 
 export class LightClient extends BaseClient {
   batchSize: number;
 
-  constructor(config: ClientConfig, protected provers: IProver[]) {
-    super(config);
+  constructor(
+    config: ClientConfig,
+    beaconChainAPIURL: string,
+    protected provers: IProver[],
+  ) {
+    super(config, beaconChainAPIURL);
     this.batchSize = config.n || DEFAULT_BATCH_SIZE;
   }
 
@@ -25,7 +24,11 @@ export class LightClient extends BaseClient {
     startCommittee: Uint8Array[],
   ): Promise<{ syncCommittee: Uint8Array[]; period: number }> {
     for (let period = startPeriod; period < currentPeriod; period += 1) {
-      const update = await prover.getSyncUpdate(period, this.batchSize);
+      const update = await prover.getSyncUpdate(
+        period,
+        currentPeriod,
+        this.batchSize,
+      );
       const validOrCommittee = this.syncUpdateVerifyGetCommittee(
         startCommittee,
         update,
@@ -49,7 +52,7 @@ export class LightClient extends BaseClient {
 
   // returns the prover info containing the current sync
   // committee and prover index of the first honest prover
-  async sync(): Promise<ProverInfo> {
+  protected async syncFromGenesis(): Promise<ProverInfo[]> {
     // get the tree size by currentPeriod - genesisPeriod
     const currentPeriod = this.getCurrentPeriod();
     let startPeriod = this.genesisPeriod;
@@ -68,10 +71,12 @@ export class LightClient extends BaseClient {
         startCommittee,
       );
       if (period === currentPeriod) {
-        return {
-          index: i,
-          syncCommittee,
-        };
+        return [
+          {
+            index: i,
+            syncCommittee,
+          },
+        ];
       }
       startPeriod = period;
       startCommittee = syncCommittee;

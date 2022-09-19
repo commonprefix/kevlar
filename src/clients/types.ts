@@ -2,7 +2,7 @@ import { IBeaconConfig } from '@lodestar/config';
 import * as altair from '@lodestar/types/altair';
 import * as phase0 from '@lodestar/types/phase0';
 import { routes } from '@lodestar/api';
-import { PubKeyString, Slot } from '../types';
+import { PubKeyString, Slot } from '../types.js';
 
 export type GenesisData = {
   committee: PubKeyString[];
@@ -19,3 +19,13 @@ export type ClientConfig = {
 
 export type OptimisticUpdate = routes.events.LightclientOptimisticHeaderUpdate;
 export type LightClientUpdate = altair.LightClientUpdate;
+
+export type ProverInfo = {
+  index: number;
+  syncCommittee: Uint8Array[];
+};
+
+export type ExecutionInfo = {
+  blockhash: string;
+  blockNumber: bigint;
+};
