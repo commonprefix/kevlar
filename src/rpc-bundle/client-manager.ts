@@ -3,7 +3,7 @@ import { Chain } from '@ethereumjs/common';
 import { toHexString, fromHexString } from '@chainsafe/ssz';
 import { networksChainConfig } from '@lodestar/config/networks';
 import { createIBeaconConfig, IBeaconConfig } from '@lodestar/config';
-import { VerifyingProvider } from 'patronum';
+import { VerifyingProvider } from '@lightclients/patronum';
 import { BaseClient } from '../clients/base-client.js';
 import { BeaconAPIProver } from '../clients/light/beacon-api-prover.js';
 import { LightClient } from '../clients/light/index.js';

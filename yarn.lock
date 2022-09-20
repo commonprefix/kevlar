@@ -430,6 +430,23 @@
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.3.tgz#555193ab2e3bb3b6adc3d551c9c030d9e860daf6"
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
 
+"@lightclients/patronum@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.0.tgz#b85509b8a098e9573f363616a2b29a430e6a999b"
+  integrity sha512-KgEiphaRZK12tDiZehuoTBGUa42nSrZoupKYyiLVCALm0NLWUe8Fwqr7aVu7khYIxyc/CNkZuyNz0Ysu/Bp2gg==
+  dependencies:
+    "@ethereumjs/block" "4.0.0-beta.3"
+    "@ethereumjs/blockchain" "6.0.0-beta.3"
+    "@ethereumjs/common" "3.0.0-beta.3"
+    "@ethereumjs/trie" "5.0.0-beta.3"
+    "@ethereumjs/tx" "4.0.0-beta.3"
+    "@ethereumjs/util" "8.0.0-beta.3"
+    "@ethereumjs/vm" "6.0.0-beta.3"
+    json-rpc-2.0 "1.4.1"
+    lodash "4.17.21"
+    rlp "3.0.0"
+    web3 "1.7.5"
+
 "@lodestar/api@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@lodestar/api/-/api-1.0.0.tgz#078aa62c8ddbda54821a347da647b6b7d9bbd76b"
@@ -3239,21 +3256,10 @@ path-to-regexp@0.1.7:
   resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-0.1.7.tgz#df604178005f522f15eb4490e7247a1bfaa67f8c"
   integrity sha512-5DFkuoqlv1uYQKxy8omFBeJPQcdoE07Kv2sferDCrAq1ohOU+MSDswDIbnx3YAM60qIOnYa53wBhXW0EbMonrQ==
 
-"patronum@https://github.com/shresthagrawal/patronum#0fce114f24f0299c00c24715d9b0a41335cadb17":
-  version "0.0.1"
-  resolved "https://github.com/shresthagrawal/patronum#0fce114f24f0299c00c24715d9b0a41335cadb17"
-  dependencies:
-    "@ethereumjs/block" "4.0.0-beta.3"
-    "@ethereumjs/blockchain" "6.0.0-beta.3"
-    "@ethereumjs/common" "3.0.0-beta.3"
-    "@ethereumjs/trie" "5.0.0-beta.3"
-    "@ethereumjs/tx" "4.0.0-beta.3"
-    "@ethereumjs/util" "8.0.0-beta.3"
-    "@ethereumjs/vm" "6.0.0-beta.3"
-    json-rpc-2.0 "1.4.1"
-    lodash "4.17.21"
-    rlp "3.0.0"
-    web3 "1.7.5"
+patronum@1.12.2:
+  version "1.12.2"
+  resolved "https://registry.yarnpkg.com/patronum/-/patronum-1.12.2.tgz#7daaccfe702e7a29982db29d05e321472a194171"
+  integrity sha512-IVp4djypcs5NgIZdMaj1ggRkBUyPddnhMdka3bz4LGs2S/k9AjmhUhKiQYakmUASTmvv5CKWDFxTkm16dO5rhQ==
 
 pbkdf2@^3.0.17, pbkdf2@^3.0.3:
   version "3.1.2"

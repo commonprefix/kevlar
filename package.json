@@ -22,6 +22,7 @@
     "@chainsafe/bls": "^7.1.1",
     "@chainsafe/blst": "^0.2.6",
     "@chainsafe/ssz": "^0.9.2",
+    "@lightclients/patronum": "0.1.0",
     "@lodestar/api": "^1.0.0",
     "@lodestar/config": "^1.0.0",
     "@lodestar/light-client": "https://gitpkg.now.sh/shresthagrawal/lodestar/packages/light-client?edc9b76aaeb9d480011ae1f2302e73787d84e69e",
@@ -29,7 +30,7 @@
     "@types/lodash": "4.14.185",
     "axios": "0.27.2",
     "decimal.js": "10.4.1",
-    "patronum": "https://github.com/shresthagrawal/patronum#0fce114f24f0299c00c24715d9b0a41335cadb17"
+    "@lightclients/patronum": "1.12.2"
   },
   "scripts": {
     "build": "tsc"

@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { startServer } from 'patronum';
+import { startServer } from '@lightclients/patronum';
 import { ClientManager } from './client-manager.js';
 
 const CHAIN_ID = parseInt(process.env.CHAIN_ID || '1');
