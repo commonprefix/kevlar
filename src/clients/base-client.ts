@@ -72,10 +72,14 @@ export abstract class BaseClient {
     callback: (ei: ExecutionInfo) => AsyncOrSync<void>,
   ): Promise<ExecutionInfo> {
     setInterval(async () => {
-      const ei = await this.sync();
-      if (ei.blockhash !== this.latestBlockHash) {
-        this.latestBlockHash = ei.blockhash;
-        return await callback(ei);
+      try {
+        const ei = await this.sync();
+        if (ei.blockhash !== this.latestBlockHash) {
+          this.latestBlockHash = ei.blockhash;
+          return await callback(ei);
+        }
+      } catch (e) {
+        console.error(e);
       }
     }, POLLING_DELAY);
     return this.getLatestExecution();

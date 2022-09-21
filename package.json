@@ -40,5 +40,12 @@
   },
   "bin": {
     "rpc-proxy": "./dist/rpc-bundle/start-rpc.js"
-  }
+  },
+  "keywords": [
+    "lightclients",
+    "ethereum",
+    "pos",
+    "superlight",
+    "rpc-proxy"
+  ]
 }
