@@ -7,7 +7,8 @@ import { VerifyingProvider } from '@lightclients/patronum';
 import { BaseClient } from '../clients/base-client.js';
 import { BeaconAPIProver } from '../clients/light/beacon-api-prover.js';
 import { LightClient } from '../clients/light/index.js';
-import GoerliBootstrapData from './bootstrap-data/goerli.json' assert { type: 'json' };
+import { readFileSync } from 'fs';
+
 
 export class ClientManager {
   client: BaseClient;
@@ -18,9 +19,15 @@ export class ClientManager {
     protected chain: Chain,
     n?: number,
   ) {
-    const bootstrapData = GoerliBootstrapData;
+    const networkName = chain === 1 ? 'mainnet' : 'goerli';
+    const bootstrapData = JSON.parse(
+      readFileSync(
+        new URL(`./bootstrap-data/${networkName}.json`, import.meta.url),
+        {encoding:'utf8', flag:'r'}
+      )
+    );
     const chainConfig = createIBeaconConfig(
-      networksChainConfig['goerli'],
+      networksChainConfig[networkName],
       fromHexString(bootstrapData.genesis_validator_root),
     );
     const clientConfig = {
@@ -33,7 +40,6 @@ export class ClientManager {
       n,
     };
     const provers = [new BeaconAPIProver(beaconChainAPIURL)];
-    // TODO: change the batch size after the BeaconAPIProver edge case is done
     this.client = new LightClient(clientConfig, beaconChainAPIURL, provers);
   }
 

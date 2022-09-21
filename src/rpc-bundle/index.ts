@@ -1,1 +1,1 @@
-export { ClientManager } from './client-manager';
+export { ClientManager } from './client-manager.js';
