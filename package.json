@@ -1,6 +1,6 @@
 {
   "name": "pos-eth-lightclients",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "LightClient implementations for PoS Ethereum ",
   "main": "dist/index.js",
   "repository": "https://github.com/shresthagrawal/pos-eth-lightclients.git",
