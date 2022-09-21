@@ -1,5 +1,5 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
+// import * as dotenv from 'dotenv';
+// dotenv.config();
 
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
