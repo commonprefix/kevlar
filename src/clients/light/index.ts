@@ -2,6 +2,7 @@ import { concatUint8Array, isUint8ArrayEq, smallHexStr } from '../../utils.js';
 import { BaseClient } from '../base-client.js';
 import { ClientConfig, ProverInfo } from '../types.js';
 import { IProver } from './iprover.js';
+import { IStore } from './istore';
 import { DEFAULT_BATCH_SIZE } from '../constants.js';
 
 export class LightClient extends BaseClient {
@@ -11,6 +12,7 @@ export class LightClient extends BaseClient {
     config: ClientConfig,
     beaconChainAPIURL: string,
     protected provers: IProver[],
+    protected store?: IStore,
   ) {
     super(config, beaconChainAPIURL);
     this.batchSize = config.n || DEFAULT_BATCH_SIZE;
@@ -42,6 +44,7 @@ export class LightClient extends BaseClient {
         };
       }
 
+      if (this.store) await this.store.addUpdate(period, update);
       startCommittee = validOrCommittee as Uint8Array[];
     }
     return {

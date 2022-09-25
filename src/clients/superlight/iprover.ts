@@ -1,6 +1,6 @@
 import { AsyncOrSync } from 'ts-essentials';
 import { Peaks } from './merkle-mountain-range.js';
-import { LightClientUpdate } from '../types.js';
+import { LightClientUpdate } from '../../types.js';
 
 export interface IProver {
   getLeafWithProof(period: number | 'latest'): AsyncOrSync<{

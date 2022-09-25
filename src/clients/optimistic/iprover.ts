@@ -1,13 +1,14 @@
 import { AsyncOrSync } from 'ts-essentials';
-import { LightClientUpdate } from '../types.js';
+import { LightClientUpdate } from '../../types.js';
 
 export interface IProver {
-  getLeaf(period: number | 'latest'): AsyncOrSync<Uint8Array[]>;
+  getCommittee(period: number | 'latest'): AsyncOrSync<Uint8Array[]>;
 
-  getLeafHash(period: number, cacheCount: number): AsyncOrSync<Uint8Array>;
-
-  getSyncUpdate(
+  getCommitteeHash(
     period: number,
-    cacheCount: number,
-  ): AsyncOrSync<LightClientUpdate>;
+    currentPeriod: number,
+    count: number,
+  ): AsyncOrSync<Uint8Array>;
+
+  getSyncUpdate(period: number): AsyncOrSync<LightClientUpdate>;
 }

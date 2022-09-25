@@ -1,4 +1,5 @@
-export const BEACON_SYNC_COMMITTEE_SIZE = 512;
+import { BEACON_SYNC_COMMITTEE_SIZE } from '../constants.js';
+
 export const BEACON_SYNC_SUPER_MAJORITY = Math.ceil(
   (BEACON_SYNC_COMMITTEE_SIZE * 2) / 3,
 );

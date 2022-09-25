@@ -1,5 +1,5 @@
 import { AsyncOrSync } from 'ts-essentials';
-import { LightClientUpdate } from '../types.js';
+import { LightClientUpdate } from '../../types.js';
 
 export interface IProver {
   getSyncUpdate(

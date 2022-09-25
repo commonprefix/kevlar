@@ -1,46 +1,40 @@
 import { init } from '@chainsafe/bls/switchable';
 import { Chain } from '@ethereumjs/common';
-import { toHexString, fromHexString } from '@chainsafe/ssz';
-import { networksChainConfig } from '@lodestar/config/networks';
-import { createIBeaconConfig, IBeaconConfig } from '@lodestar/config';
+import { toHexString } from '@chainsafe/ssz';
 import { VerifyingProvider } from '@lightclients/patronum';
 import { BaseClient } from '../clients/base-client.js';
-import { BeaconAPIProver } from '../clients/light/beacon-api-prover.js';
+import { BeaconAPIProver } from '../provers/beacon-api-light/client.js';
+import { LightOptimisticProver } from '../provers/light-optimistic/client.js';
 import { LightClient } from '../clients/light/index.js';
-import { readFileSync } from 'fs';
-
+import { OptimisticLightClient } from '../clients/optimistic/index.js';
+import { getDefaultClientConfig } from './utils.js';
+import { ClientType } from '../constants.js';
 
 export class ClientManager {
   client: BaseClient;
 
   constructor(
-    protected beaconChainAPIURL: string,
-    protected providerURL: string,
     protected chain: Chain,
+    clientType: ClientType,
+    beaconChainAPIURL: string,
+    protected providerURL: string,
+    proverURLS: string[],
     n?: number,
   ) {
-    const networkName = chain === 1 ? 'mainnet' : 'goerli';
-    const bootstrapData = JSON.parse(
-      readFileSync(
-        new URL(`./bootstrap-data/${networkName}.json`, import.meta.url),
-        {encoding:'utf8', flag:'r'}
-      )
-    );
-    const chainConfig = createIBeaconConfig(
-      networksChainConfig[networkName],
-      fromHexString(bootstrapData.genesis_validator_root),
-    );
-    const clientConfig = {
-      genesis: {
-        committee: bootstrapData.committee_pk,
-        slot: parseInt(bootstrapData.slot),
-        time: parseInt(bootstrapData.genesis_time),
-      },
-      chainConfig,
-      n,
-    };
-    const provers = [new BeaconAPIProver(beaconChainAPIURL)];
-    this.client = new LightClient(clientConfig, beaconChainAPIURL, provers);
+    const config = getDefaultClientConfig(chain, n);
+    if (clientType === ClientType.light) {
+      const provers = proverURLS.map(pu => new BeaconAPIProver(pu));
+      this.client = new LightClient(config, beaconChainAPIURL, provers);
+    } else if (clientType === ClientType.optimistic) {
+      const provers = proverURLS.map(pu => new LightOptimisticProver(pu));
+      this.client = new OptimisticLightClient(
+        config,
+        beaconChainAPIURL,
+        provers,
+      );
+    } else {
+      throw new Error('superlight client not implemented yet');
+    }
   }
 
   async sync(): Promise<VerifyingProvider> {

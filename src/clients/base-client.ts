@@ -18,14 +18,8 @@ import {
 import { SyncCommitteeFast } from '@lodestar/light-client/types';
 import { BEACON_SYNC_SUPER_MAJORITY, POLLING_DELAY } from './constants.js';
 import { isCommitteeSame, concatUint8Array } from '../utils.js';
-import {
-  ClientConfig,
-  OptimisticUpdate,
-  LightClientUpdate,
-  ProverInfo,
-  ExecutionInfo,
-} from './types.js';
-import { Bytes32 } from '../types';
+import { ClientConfig, ProverInfo, ExecutionInfo } from './types.js';
+import { Bytes32, OptimisticUpdate, LightClientUpdate } from '../types.js';
 
 export abstract class BaseClient {
   genesisCommittee: Uint8Array[];
@@ -66,6 +60,10 @@ export abstract class BaseClient {
       this.latestBlockHash = ei.blockhash;
     }
     return ei;
+  }
+
+  public get isSynced() {
+    return this.latestPeriod === this.getCurrentPeriod();
   }
 
   public async subscribe(

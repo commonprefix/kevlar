@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as altair from '@lodestar/types/altair';
-import { IProver } from './iprover.js';
-import { LightClientUpdate } from '../types.js';
+import { IProver } from '../../clients/light/iprover.js';
+import { LightClientUpdate } from '../../types.js';
 
 // This prover can only be used by a light client
 export class BeaconAPIProver implements IProver {

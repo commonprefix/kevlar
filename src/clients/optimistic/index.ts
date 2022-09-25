@@ -29,7 +29,7 @@ export class OptimisticLightClient extends BaseClient {
     if (period === this.genesisPeriod) return this.genesisCommittee;
     if (!expectedCommitteeHash)
       throw new Error('expectedCommitteeHash required');
-    const committee = await this.provers[proverIndex].getLeaf(period);
+    const committee = await this.provers[proverIndex].getCommittee(period);
     const committeeHash = this.getCommitteeHash(committee);
     if (!isUint8ArrayEq(committeeHash, expectedCommitteeHash as Uint8Array))
       throw new Error('prover responded with an incorrect committee');
@@ -42,7 +42,7 @@ export class OptimisticLightClient extends BaseClient {
     period: number,
     prevCommittee: Uint8Array[],
   ): Promise<boolean> {
-    const update = await this.provers[proverIndex].getSyncUpdate(period - 1, 1);
+    const update = await this.provers[proverIndex].getSyncUpdate(period - 1);
     const validOrCommittee = this.syncUpdateVerifyGetCommittee(
       prevCommittee,
       update,
@@ -58,43 +58,28 @@ export class OptimisticLightClient extends BaseClient {
     proverInfo1: ProverInfoL,
     proverInfo2: ProverInfoL,
     period: number,
-    prevCommitteeHash: Uint8Array | null,
+    prevCommitteeHash: Uint8Array,
   ): Promise<boolean> {
-    let is1Correct = false;
-    let is2Correct = false;
-
-    if (period === this.genesisPeriod) {
-      const genesisCommittee = this.genesisCommittee;
-      const genesisCommitteeHash = this.getCommitteeHash(genesisCommittee);
-
-      is1Correct = isUint8ArrayEq(
-        proverInfo1.syncCommitteeHash,
-        genesisCommitteeHash,
-      );
-      is2Correct = isUint8ArrayEq(
-        proverInfo2.syncCommitteeHash,
-        genesisCommitteeHash,
-      );
-    } else {
-      // TODO: handle if one of the prover lies
-      const prevCommittee = await this.getCommittee(
-        period - 1,
-        proverInfo1.index,
-        prevCommitteeHash,
-      );
-      is1Correct = await this.checkCommitteeHashAt(
-        proverInfo1.index,
-        proverInfo1.syncCommitteeHash,
-        period,
-        prevCommittee,
-      );
-      is2Correct = await this.checkCommitteeHashAt(
-        proverInfo2.index,
-        proverInfo2.syncCommitteeHash,
-        period,
-        prevCommittee,
-      );
-    }
+    const prevCommittee =
+      period === this.genesisPeriod
+        ? this.genesisCommittee
+        : await this.getCommittee(
+            period - 1,
+            proverInfo1.index,
+            prevCommitteeHash,
+          );
+    const is1Correct = await this.checkCommitteeHashAt(
+      proverInfo1.index,
+      proverInfo1.syncCommitteeHash,
+      period,
+      prevCommittee,
+    );
+    const is2Correct = await this.checkCommitteeHashAt(
+      proverInfo2.index,
+      proverInfo2.syncCommitteeHash,
+      period,
+      prevCommittee,
+    );
 
     if (is1Correct && !is2Correct) return true;
     else if (is2Correct && !is1Correct) return false;
@@ -109,7 +94,7 @@ export class OptimisticLightClient extends BaseClient {
   async tournament(
     proverInfos: ProverInfoL[],
     period: number,
-    lastCommitteeHash: Uint8Array | null,
+    lastCommitteeHash: Uint8Array,
   ) {
     let winners = [proverInfos[0]];
     for (let i = 1; i < proverInfos.length; i++) {
@@ -160,16 +145,22 @@ export class OptimisticLightClient extends BaseClient {
       `Sync started using ${this.provers.length} Provers from period(${startPeriod}) to period(${currentPeriod})`,
     );
 
-    let lastCommitteeHash: Uint8Array | null = null;
+    let lastCommitteeHash: Uint8Array = this.getCommitteeHash(
+      this.genesisCommittee,
+    );
     let proverInfos: ProverInfoL[] = this.provers.map((_, i) => ({
       index: i,
       syncCommitteeHash: new Uint8Array(),
     }));
 
-    for (let period = startPeriod; period < currentPeriod; period++) {
+    for (let period = startPeriod + 1; period <= currentPeriod; period++) {
       const committeeHashes: Uint8Array[] = await Promise.all(
         proverInfos.map(pi =>
-          this.provers[pi.index].getLeafHash(period, this.batchSize),
+          this.provers[pi.index].getCommitteeHash(
+            period,
+            currentPeriod,
+            this.batchSize,
+          ),
         ),
       );
 
@@ -197,15 +188,25 @@ export class OptimisticLightClient extends BaseClient {
       lastCommitteeHash = proverInfos[0].syncCommitteeHash;
     }
 
-    // TODO: improve this; this might fail if a malicious prover behaves honestly until the last step
-    const committee = await this.provers[proverInfos[0].index].getLeaf(
-      'latest',
-    );
-    return [
-      {
-        index: proverInfos[0].index,
-        syncCommittee: committee,
-      },
-    ];
+    for (const p of proverInfos) {
+      try {
+        const committee = await this.getCommittee(
+          currentPeriod,
+          p.index,
+          lastCommitteeHash,
+        );
+        return [
+          {
+            index: p.index,
+            syncCommittee: committee,
+          },
+        ];
+      } catch (e) {
+        console.error(
+          `seemingly honest prover(${p.index}) responded incorrectly!`,
+        );
+      }
+    }
+    throw new Error('none of the provers responded honestly :(');
   }
 }
