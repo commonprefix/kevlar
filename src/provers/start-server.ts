@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { startServer } from './server.js';
+import { startServer } from './light-optimistic/server.js';
 
 const PORT = parseInt(process.env.PORT || '80');
 const CHAIN_ID = parseInt(process.env.CHAIN_ID || '1');
