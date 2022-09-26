@@ -1,6 +1,6 @@
 {
   "name": "pos-eth-lightclients",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "description": "LightClient implementations for PoS Ethereum ",
   "main": "dist/index.js",
   "repository": "https://github.com/shresthagrawal/pos-eth-lightclients.git",
@@ -42,7 +42,7 @@
   },
   "bin": {
     "rpc-proxy": "./dist/rpc-bundle/start-rpc.js",
-    "rpc-prover": "./dist/provers/start-server.js" 
+    "rpc-prover": "./dist/provers/start-server.js"
   },
   "keywords": [
     "lightclients",
