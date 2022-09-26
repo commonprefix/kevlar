@@ -12,8 +12,7 @@ export function getApp(network: number, beaconAPIURL: string) {
   const provers = [new BeaconAPIProver(beaconAPIURL)];
   const store = new MemoryStore();
   const client = new LightClient(config, beaconAPIURL, provers, store);
-  client.sync();
-  client.subscribe(() => {});
+  client.sync().then(() => client.subscribe(() => {}));
 
   app.get('/sync-committee/hashes', function (req, res) {
     if (!client.isSynced)
