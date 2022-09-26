@@ -9,6 +9,23 @@ import { startServer } from '@lightclients/patronum';
 import { ClientManager } from './client-manager.js';
 import { ClientType } from '../constants.js';
 
+
+const defaultBeaconAPIURL: {[network: number]: string} = {
+  1: 'https://lodestar-mainnet.chainsafe.io',
+  5: 'https://lodestar-goerli.chainsafe.io',
+}
+
+const defaultProvers: {[client: string]: {[network: number]: string[]}} = {
+  [ClientType.optimistic]: {
+    1: ['https://light-optimistic-mainnet-1.herokuapp.com', 'https://light-optimistic-mainnet-2.herokuapp.com'],
+    5: ['https://light-optimistic-goerli-1.herokuapp.com', 'https://light-optimistic-goerli-2.herokuapp.com']
+  },
+  [ClientType.light]: {
+    1: [defaultBeaconAPIURL[1]],
+    5: [defaultBeaconAPIURL[5]]
+  }
+}
+
 async function main() {
   try {
     const argv = await yargs(hideBin(process.argv))
@@ -39,14 +56,14 @@ async function main() {
         alias: 'a',
         description: 'beacon chain api URL',
       })
-      .demandOption(['rpc', 'provers'])
+      .demandOption(['rpc'])
       .parse();
 
     const network = argv.network || parseInt(process.env.CHAIN_ID || '1');
     const port = argv.port || (network === 5 ? 8547 : 8546);
     const clientType =
       argv.client === 'light' ? ClientType.light : ClientType.optimistic;
-    const proverURLs = (argv.provers as string).split(',');
+    const proverURLs = defaultProvers[clientType][network].concat(argv.prover ? (argv.provers as string).split(',') : []);
     const beaconAPIURL =
       (argv['beacon-api'] as string) ||
       (network === 5

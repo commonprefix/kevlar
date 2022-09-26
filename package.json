@@ -41,7 +41,8 @@
     "rpc-proxy": "npx ts-node ./src/rpc-bundle/start-rpc.ts"
   },
   "bin": {
-    "rpc-proxy": "./dist/rpc-bundle/start-rpc.js"
+    "rpc-proxy": "./dist/rpc-bundle/start-rpc.js",
+    "rpc-prover": "./dist/provers/start-server.js" 
   },
   "keywords": [
     "lightclients",
