@@ -1,4 +1,4 @@
-name="light-optimistic-mainnet-1"
+name=$1
 
 heroku create "$name" 
 git remote add "$name" "https://git.heroku.com/$name.git"
