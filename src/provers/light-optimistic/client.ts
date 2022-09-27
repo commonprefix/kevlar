@@ -10,19 +10,23 @@ export class LightOptimisticProver implements IProver {
   constructor(protected serverURL: string) {}
 
   async getCommittee(period: number | 'latest'): Promise<Uint8Array[]> {
-    const res = await axios.get(`${this.serverURL}/sync-committee/${period}`, {responseType: 'arraybuffer'});
+    const res = await axios.get(`${this.serverURL}/sync-committee/${period}`, {
+      responseType: 'arraybuffer',
+    });
     return CommitteeSSZ.deserialize(res.data);
   }
 
   async getSyncUpdate(period: number): Promise<LightClientUpdate> {
-    const res = await axios.get(`${this.serverURL}/sync-committee/${period}`, {responseType: 'arraybuffer'});
+    const res = await axios.get(`${this.serverURL}/sync-committee/${period}`, {
+      responseType: 'arraybuffer',
+    });
     return LightClientUpdateSSZ.deserialize(res.data);
   }
 
   async _getHashes(startPeriod: number, count: number): Promise<Uint8Array[]> {
     const res = await axios.get(
       `${this.serverURL}/sync-committee/hashes?startPeriod=${startPeriod}&maxCount=${count}`,
-      {responseType: 'arraybuffer'}
+      { responseType: 'arraybuffer' },
     );
     return HashesSSZ.deserialize(res.data);
   }

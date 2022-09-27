@@ -32,7 +32,7 @@ const defaultProvers: { [client: string]: { [network: number]: string[] } } = {
 };
 
 // TODO: Add more endpoints.
-// Every endpoint needs to support eth_createAccessList, eth_estimateGas 
+// Every endpoint needs to support eth_createAccessList, eth_estimateGas
 const defaultPublicRPC: { [network: number]: string[] } = {
   1: [
     // 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79', (not very stable)

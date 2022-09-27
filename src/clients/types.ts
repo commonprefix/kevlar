@@ -24,4 +24,6 @@ export type ExecutionInfo = {
   blockNumber: bigint;
 };
 
-export type VerifyWithReason = { correct: true } | { correct: false, reason: string };
+export type VerifyWithReason =
+  | { correct: true }
+  | { correct: false; reason: string };

@@ -41,7 +41,8 @@ export class ClientManager {
     await init('blst-native');
 
     await this.client.sync();
-    const { blockhash, blockNumber } = await this.client.getNextValidExecutionInfo();
+    const { blockhash, blockNumber } =
+      await this.client.getNextValidExecutionInfo();
     const provider = new VerifyingProvider(
       this.providerURL,
       blockNumber,

@@ -18,7 +18,12 @@ import {
 import { SyncCommitteeFast } from '@lodestar/light-client/types';
 import { BEACON_SYNC_SUPER_MAJORITY, POLLING_DELAY } from './constants.js';
 import { isCommitteeSame, concatUint8Array } from '../utils.js';
-import { ClientConfig, ProverInfo, ExecutionInfo, VerifyWithReason } from './types.js';
+import {
+  ClientConfig,
+  ProverInfo,
+  ExecutionInfo,
+  VerifyWithReason,
+} from './types.js';
 import { Bytes32, OptimisticUpdate, LightClientUpdate } from '../types.js';
 
 export abstract class BaseClient {
@@ -56,11 +61,15 @@ export abstract class BaseClient {
     }
   }
 
-  public async getNextValidExecutionInfo(retry: number = 10): Promise<ExecutionInfo> {
-    if(retry === 0)
-      throw new Error('no valid execution payload found in the given retry limit');
+  public async getNextValidExecutionInfo(
+    retry: number = 10,
+  ): Promise<ExecutionInfo> {
+    if (retry === 0)
+      throw new Error(
+        'no valid execution payload found in the given retry limit',
+      );
     const ei = await this.getLatestExecution();
-    if(ei) return ei;
+    if (ei) return ei;
     // delay for the next slot
     await new Promise(resolve => setTimeout(resolve, POLLING_DELAY));
     return this.getNextValidExecutionInfo(retry - 1);
@@ -70,9 +79,7 @@ export abstract class BaseClient {
     return this.latestPeriod === this.getCurrentPeriod();
   }
 
-  public async subscribe(
-    callback: (ei: ExecutionInfo) => AsyncOrSync<void>,
-  ) {
+  public async subscribe(callback: (ei: ExecutionInfo) => AsyncOrSync<void>) {
     setInterval(async () => {
       try {
         await this.sync();
@@ -93,10 +100,7 @@ export abstract class BaseClient {
     );
     const updateJSON = res.data.data;
     const update = this.optimisticUpdateFromJSON(updateJSON);
-    const verify = this.optimisticUpdateVerify(
-      this.latestCommittee,
-      update,
-    );
+    const verify = this.optimisticUpdateVerify(this.latestCommittee, update);
     // TODO: check the update agains the latest sync commttee
     if (!verify.correct) {
       console.error(`Invalid Optimistic Update: ${verify.reason}`);
@@ -206,7 +210,7 @@ export abstract class BaseClient {
   optimisticUpdateVerify(
     committee: Uint8Array[],
     update: OptimisticUpdate,
-  ): VerifyWithReason  {
+  ): VerifyWithReason {
     const { attestedHeader: header, syncAggregate } = update;
 
     // TODO: fix this
@@ -228,15 +232,15 @@ export abstract class BaseClient {
         header.slot,
       );
     } catch (e) {
-      return {correct: false, reason: 'invalid signatures'};
+      return { correct: false, reason: 'invalid signatures' };
     }
 
     const participation =
       syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
     if (participation < BEACON_SYNC_SUPER_MAJORITY) {
-      return {correct: false, reason: 'insufficient signatures'};
+      return { correct: false, reason: 'insufficient signatures' };
     }
-    return {correct: true};
+    return { correct: true };
   }
 
   getCurrentPeriod(): number {
