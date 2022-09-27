@@ -18,7 +18,7 @@ import {
 import { SyncCommitteeFast } from '@lodestar/light-client/types';
 import { BEACON_SYNC_SUPER_MAJORITY, POLLING_DELAY } from './constants.js';
 import { isCommitteeSame, concatUint8Array } from '../utils.js';
-import { ClientConfig, ProverInfo, ExecutionInfo } from './types.js';
+import { ClientConfig, ProverInfo, ExecutionInfo, VerifyWithReason } from './types.js';
 import { Bytes32, OptimisticUpdate, LightClientUpdate } from '../types.js';
 
 export abstract class BaseClient {
@@ -42,7 +42,7 @@ export abstract class BaseClient {
 
   protected abstract syncFromGenesis(): Promise<ProverInfo[]>;
 
-  public async sync(): Promise<ExecutionInfo> {
+  public async sync() {
     // TODO: this always sync's from Genesis but you can sync
     // from the last verified sync committee
     const currentPeriod = this.getCurrentPeriod();
@@ -54,12 +54,16 @@ export abstract class BaseClient {
       this.latestCommittee = proverInfos[0].syncCommittee;
       this.latestPeriod = currentPeriod;
     }
+  }
 
+  public async getNextValidExecutionInfo(retry: number = 10): Promise<ExecutionInfo> {
+    if(retry === 0)
+      throw new Error('no valid execution payload found in the given retry limit');
     const ei = await this.getLatestExecution();
-    if (!this.latestBlockHash) {
-      this.latestBlockHash = ei.blockhash;
-    }
-    return ei;
+    if(ei) return ei;
+    // delay for the next slot
+    await new Promise(resolve => setTimeout(resolve, POLLING_DELAY));
+    return this.getNextValidExecutionInfo(retry - 1);
   }
 
   public get isSynced() {
@@ -68,11 +72,12 @@ export abstract class BaseClient {
 
   public async subscribe(
     callback: (ei: ExecutionInfo) => AsyncOrSync<void>,
-  ): Promise<ExecutionInfo> {
+  ) {
     setInterval(async () => {
       try {
-        const ei = await this.sync();
-        if (ei.blockhash !== this.latestBlockHash) {
+        await this.sync();
+        const ei = await this.getLatestExecution();
+        if (ei && ei.blockhash !== this.latestBlockHash) {
           this.latestBlockHash = ei.blockhash;
           return await callback(ei);
         }
@@ -80,22 +85,23 @@ export abstract class BaseClient {
         console.error(e);
       }
     }, POLLING_DELAY);
-    return this.getLatestExecution();
   }
 
-  protected async getLatestExecution(): Promise<ExecutionInfo> {
+  protected async getLatestExecution(): Promise<ExecutionInfo | null> {
     const res = await axios.get(
       `${this.beaconChainAPIURL}/eth/v1/beacon/light_client/optimistic_update/`,
     );
     const updateJSON = res.data.data;
     const update = this.optimisticUpdateFromJSON(updateJSON);
-    const isUpdateCorrect = this.optimisticUpdateVerify(
+    const verify = this.optimisticUpdateVerify(
       this.latestCommittee,
       update,
     );
     // TODO: check the update agains the latest sync commttee
-    if (!(isUpdateCorrect as boolean))
-      throw new Error('invalid optimistic update provided by the rpc');
+    if (!verify.correct) {
+      console.error(`Invalid Optimistic Update: ${verify.reason}`);
+      return null;
+    }
     console.log(
       `Optimistic update verified for slot ${updateJSON.attested_header.slot}`,
     );
@@ -200,7 +206,7 @@ export abstract class BaseClient {
   optimisticUpdateVerify(
     committee: Uint8Array[],
     update: OptimisticUpdate,
-  ): boolean {
+  ): VerifyWithReason  {
     const { attestedHeader: header, syncAggregate } = update;
 
     // TODO: fix this
@@ -222,15 +228,15 @@ export abstract class BaseClient {
         header.slot,
       );
     } catch (e) {
-      return false;
+      return {correct: false, reason: 'invalid signatures'};
     }
 
     const participation =
       syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
     if (participation < BEACON_SYNC_SUPER_MAJORITY) {
-      return false;
+      return {correct: false, reason: 'insufficient signatures'};
     }
-    return true;
+    return {correct: true};
   }
 
   getCurrentPeriod(): number {

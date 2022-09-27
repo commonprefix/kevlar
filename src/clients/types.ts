@@ -23,3 +23,5 @@ export type ExecutionInfo = {
   blockhash: string;
   blockNumber: bigint;
 };
+
+export type VerifyWithReason = { correct: true } | { correct: false, reason: string };
