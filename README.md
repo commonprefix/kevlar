@@ -8,9 +8,7 @@ Implements different light client implementations for PoS Ethereum.
 npm install -g pos-eth-lightclients
 rpc-proxy
 ```
-
-Add proxy network to metamask. By default the proxy starts at port `8546` for mainnet and `8547` for goerli.
-
+The PRC is now available at `http://localhost:8546`. Add this local network to metamask. 
 
 ```bash
 rpc-proxy --help
