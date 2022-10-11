@@ -5,7 +5,7 @@
 
 import Decimal from 'decimal.js';
 import { toHexString, fromHexString } from '@chainsafe/ssz';
-import { SecretKey } from '@chainsafe/bls/blst-native';
+import bls from '@chainsafe/bls/switchable';
 // import seedrandom from 'seedrandom';
 import _ from 'lodash';
 
@@ -37,7 +37,7 @@ export function generateRandomSyncCommittee(): Uint8Array[] {
   let res = [];
   // TODO: change 512 to constant
   for (let i = 0; i < 512; i++) {
-    res.push(SecretKey.fromKeygen().toPublicKey().toBytes());
+    res.push(bls.SecretKey.fromKeygen().toPublicKey().toBytes());
   }
   return res;
 }

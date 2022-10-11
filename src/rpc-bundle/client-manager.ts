@@ -38,7 +38,11 @@ export class ClientManager {
   }
 
   async sync(): Promise<VerifyingProvider> {
-    await init('blst-native');
+    try {
+      await init('blst-native');
+    } catch {
+      await init('herumi');
+    }
 
     await this.client.sync();
     const { blockhash, blockNumber } =

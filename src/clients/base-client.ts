@@ -5,7 +5,8 @@ import * as phase0 from '@lodestar/types/phase0';
 import * as bellatrix from '@lodestar/types/bellatrix';
 import { digest } from '@chainsafe/as-sha256';
 import { IBeaconConfig } from '@lodestar/config';
-import { PublicKey } from '@chainsafe/bls/blst-native';
+import type { PublicKey } from '@chainsafe/bls/types';
+import bls from "@chainsafe/bls/switchable";
 import { ListCompositeType, fromHexString, toHexString } from '@chainsafe/ssz';
 import {
   computeSyncPeriodAtSlot,
@@ -144,7 +145,7 @@ export abstract class BaseClient {
   }
 
   private deserializePubkeys(pubkeys: Uint8Array[]): PublicKey[] {
-    return pubkeys.map(pk => PublicKey.fromBytes(pk));
+    return pubkeys.map(pk => bls.PublicKey.fromBytes(pk));
   }
 
   // This function is ovveride of the original function in
@@ -157,7 +158,7 @@ export abstract class BaseClient {
     const pubkeys = this.deserializePubkeys(syncCommittee);
     return {
       pubkeys,
-      aggregatePubkey: PublicKey.aggregate(pubkeys),
+      aggregatePubkey: bls.PublicKey.aggregate(pubkeys),
     };
   }
 

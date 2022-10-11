@@ -96,7 +96,11 @@ export async function startServer(
   beaconAPIURL: string,
 ) {
   handleErrors();
-  await init('blst-native');
+  try {
+    await init('blst-native');
+  } catch {
+    await init('herumi');
+  }
   const httpServer = http.createServer();
 
   httpServer.setTimeout(1000 * 20); // 20s
