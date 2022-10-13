@@ -1,7 +1,7 @@
 {
   "name": "@lightclients/kevlar",
   "version": "0.1.6",
-  "description": "Kevlar is a CLI tool that allows you to run a light client-based RPC Proxy",
+  "description": "Light client-based RPC Proxy for PoS Ethereum",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
