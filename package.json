@@ -1,9 +1,12 @@
 {
-  "name": "kevlar",
+  "name": "@lightclients/kevlar",
   "version": "0.1.6",
-  "description": "Kevlar is a simple CLI tool that allows you to run a light client-based RPC Proxy",
+  "description": "Kevlar is a CLI tool that allows you to run a light client-based RPC Proxy",
   "main": "dist/index.js",
-  "repository": "https://github.com/shresthagrawal/kevlar.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shresthagrawal/kevlar.git"
+  },
   "author": "Shresth Agrawal <shresthagrawal.31@gmail.com>",
   "license": "MIT",
   "private": false,
@@ -40,9 +43,9 @@
     "rpc-proxy": "npx ts-node ./src/rpc-bundle/start-rpc.ts"
   },
   "bin": {
-    "kevlar": "./dist/rpc-bundle/start-rpc.js",
-    "rpc-proxy": "./dist/rpc-bundle/start-rpc.js",
-    "rpc-prover": "./dist/provers/start-server.js"
+    "kevlar": "dist/rpc-bundle/start-rpc.js",
+    "rpc-proxy": "dist/rpc-bundle/start-rpc.js",
+    "rpc-prover": "dist/provers/start-server.js"
   },
   "keywords": [
     "lightclients",
@@ -53,5 +56,9 @@
   ],
   "optionalDependencies": {
     "@chainsafe/blst": "^0.2.6"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/shresthagrawal/kevlar/issues"
+  },
+  "homepage": "https://github.com/shresthagrawal/kevlar#readme"
 }
