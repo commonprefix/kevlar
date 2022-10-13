@@ -425,10 +425,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lightclients/patronum@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.7.tgz#83505517c868b157e23f13f40f723104a3b46ff2"
-  integrity sha512-164+TL3gq+jdu5+eeogVwcT6r46SJSuIesN+uai8SN7/ddu1ZLuwOI320lDNDy3VI/4nV3QMY1cmxCPW0ycs7w==
+"@lightclients/patronum@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.8.tgz#0997cff4ddeead94db27a5d214fbea70b1691729"
+  integrity sha512-rjXFtnepmF5KR7R6gZE2qft9p2EVnxBSOYVYd9DCIvpuCG1jkv0AZXwQMzuTS5BaRKGXi3SmZ4D/zombWI1wKA==
   dependencies:
     "@ethereumjs/block" "4.0.0"
     "@ethereumjs/blockchain" "6.0.0"
