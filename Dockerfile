@@ -1,5 +1,8 @@
 FROM node:alpine
 
-RUN npm i -g @lightclients/kevlar
+WORKDIR /workspace
+COPY . /workspace
+
+RUN yarn install && yarn build && npm i -g .
 
 CMD [ "kevlar" ]
