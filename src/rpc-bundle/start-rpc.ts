@@ -83,7 +83,7 @@ async function main() {
     const clientType =
       argv.client === 'light' ? ClientType.light : ClientType.optimistic;
     const proverURLs = defaultProvers[clientType][network].concat(
-      argv.prover ? (argv.provers as string).split(',') : [],
+      argv.provers ? (argv.provers as string).split(',') : [],
     );
     const beaconAPIURL =
       (argv['beacon-api'] as string) ||
