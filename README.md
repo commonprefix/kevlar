@@ -44,3 +44,10 @@ yarn start
 ```bash
 bash src/provers/light-optimistic/deploy-heroku.sh <heroku-app-name>
 ```
+
+### Deploy to Docker
+
+```bash
+docker run -p 8546:8546 --name kevlar shresthagrawal/kevlar
+curl -X POST --header "Content-type: application/json" --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' http://localhost:8546/
+```
