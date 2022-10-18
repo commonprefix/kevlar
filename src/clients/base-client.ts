@@ -6,7 +6,7 @@ import * as bellatrix from '@lodestar/types/bellatrix';
 import { digest } from '@chainsafe/as-sha256';
 import { IBeaconConfig } from '@lodestar/config';
 import type { PublicKey } from '@chainsafe/bls/types';
-import bls from "@chainsafe/bls/switchable";
+import bls from '@chainsafe/bls/switchable';
 import { ListCompositeType, fromHexString, toHexString } from '@chainsafe/ssz';
 import {
   computeSyncPeriodAtSlot,

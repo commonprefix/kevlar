@@ -15,11 +15,9 @@ export class BeaconAPIProver implements IProver {
   ): Promise<LightClientUpdate[]> {
     const res = await handleGETRequest(
       `${this.serverURL}/eth/v1/beacon/light_client/updates?start_period=${startPeriod}&count=${maxCount}`,
-      false
+      false,
     );
-    return res.data.map((u: any) =>
-      altair.ssz.LightClientUpdate.fromJson(u),
-    );
+    return res.data.map((u: any) => altair.ssz.LightClientUpdate.fromJson(u));
   }
 
   async getSyncUpdate(

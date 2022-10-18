@@ -47,7 +47,7 @@ export class LightClient extends BaseClient {
 
         if (this.store) await this.store.addUpdate(period, update);
         startCommittee = validOrCommittee as Uint8Array[];
-      } catch(e) {
+      } catch (e) {
         console.error(`failed to fetch sync update for period(${period})`);
         return {
           syncCommittee: startCommittee,

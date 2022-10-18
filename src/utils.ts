@@ -94,11 +94,10 @@ export async function wait(ms: number) {
   });
 }
 
-
 export async function handleGETRequest(
   url: string,
   isBuffer: boolean = true,
-  retry: number = 5
+  retry: number = 5,
 ): Promise<any> {
   if (retry < 0) {
     throw Error(`GET request failed: ${url}`);
@@ -109,7 +108,7 @@ export async function handleGETRequest(
       isBuffer ? { responseType: 'arraybuffer' } : undefined,
     );
     return data;
-  } catch(e) {
+  } catch (e) {
     return handleGETRequest(url, isBuffer, retry - 1);
   }
 }

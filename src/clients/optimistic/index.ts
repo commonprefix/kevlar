@@ -240,17 +240,20 @@ export class OptimisticLightClient extends BaseClient {
         );
       }
 
-      if(proverInfos.length === 0) {
+      if (proverInfos.length === 0) {
         throw new Error('none of the provers responded honestly :(');
-      }
-      else if(proverInfos.length === 1) {
+      } else if (proverInfos.length === 1) {
         try {
-          lastCommitteeHash = await this.provers[proverInfos[0].index].getCommitteeHash(currentPeriod, currentPeriod, this.batchSize);
+          lastCommitteeHash = await this.provers[
+            proverInfos[0].index
+          ].getCommitteeHash(currentPeriod, currentPeriod, this.batchSize);
           break;
-        } catch(e) {
-          throw new Error(`none of the provers responded honestly :( : ${e.message}`);
+        } catch (e) {
+          throw new Error(
+            `none of the provers responded honestly :( : ${e.message}`,
+          );
         }
-      } else  {
+      } else {
         lastCommitteeHash = proverInfos[0].syncCommitteeHash;
       }
     }
