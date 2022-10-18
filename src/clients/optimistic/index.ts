@@ -42,16 +42,24 @@ export class OptimisticLightClient extends BaseClient {
     period: number,
     prevCommittee: Uint8Array[],
   ): Promise<boolean> {
-    const update = await this.provers[proverIndex].getSyncUpdate(period - 1);
-    const validOrCommittee = this.syncUpdateVerifyGetCommittee(
-      prevCommittee,
-      update,
-    );
-    if (!(validOrCommittee as boolean)) return false;
-    const committeeHash = this.getCommitteeHash(
-      validOrCommittee as Uint8Array[],
-    );
-    return isUint8ArrayEq(committeeHash, expectedCommitteeHash);
+    try {
+      const update = await this.provers[proverIndex].getSyncUpdate(period - 1);
+      const validOrCommittee = this.syncUpdateVerifyGetCommittee(
+        prevCommittee,
+        update,
+      );
+      if (!(validOrCommittee as boolean)) return false;
+      const committeeHash = this.getCommitteeHash(
+        validOrCommittee as Uint8Array[],
+      );
+      return isUint8ArrayEq(committeeHash, expectedCommitteeHash);
+    } catch (e) {
+      console.error(
+        `failed to check committee hash for prover(${proverIndex}) at period(${period})`,
+        e,
+      );
+      return false;
+    }
   }
 
   async fight(
@@ -60,14 +68,36 @@ export class OptimisticLightClient extends BaseClient {
     period: number,
     prevCommitteeHash: Uint8Array,
   ): Promise<boolean> {
-    const prevCommittee =
-      period === this.genesisPeriod
-        ? this.genesisCommittee
-        : await this.getCommittee(
-            period - 1,
-            proverInfo1.index,
-            prevCommitteeHash,
-          );
+    const getPrevCommittee = async () => {
+      if (period === this.genesisPeriod) {
+        return this.genesisCommittee;
+      } else {
+        for (const p of [proverInfo1, proverInfo2]) {
+          try {
+            return await this.getCommittee(
+              period - 1,
+              p.index,
+              prevCommitteeHash,
+            );
+          } catch (e) {
+            console.error(
+              `failed to fetch committee from ${p.index} for period(${
+                period - 1
+              })`,
+              e,
+            );
+          }
+        }
+        throw new Error(
+          `failed to fetch committee from all provers for period(${
+            period - 1
+          })`,
+        );
+      }
+    };
+
+    const prevCommittee = await getPrevCommittee();
+
     const is1Correct = await this.checkCommitteeHashAt(
       proverInfo1.index,
       proverInfo1.syncCommitteeHash,
@@ -154,28 +184,53 @@ export class OptimisticLightClient extends BaseClient {
     }));
 
     for (let period = startPeriod + 1; period <= currentPeriod; period++) {
-      const committeeHashes: Uint8Array[] = await Promise.all(
-        proverInfos.map(pi =>
-          this.provers[pi.index].getCommitteeHash(
-            period,
-            currentPeriod,
-            this.batchSize,
-          ),
-        ),
+      const committeeHashes: (Uint8Array | null)[] = await Promise.all(
+        proverInfos.map(async pi => {
+          try {
+            return await this.provers[pi.index].getCommitteeHash(
+              period,
+              currentPeriod,
+              this.batchSize,
+            );
+          } catch (e) {
+            console.error(
+              `failed to fetch committee hash for prover(${pi.index}) at period(${period})`,
+              e,
+            );
+            return null;
+          }
+        }),
       );
 
+      const nonNullIndex = committeeHashes.findIndex(v => v !== null);
+      if (nonNullIndex === -1) {
+        proverInfos = [];
+        break;
+      }
+
       let foundConflict = false;
-      for (let j = 0; j < committeeHashes.length; j++) {
-        if (!isUint8ArrayEq(committeeHashes[j], committeeHashes[0])) {
+      for (let j = nonNullIndex + 1; j < committeeHashes.length; j++) {
+        if (
+          committeeHashes[j] !== null &&
+          !isUint8ArrayEq(committeeHashes[j]!, committeeHashes[nonNullIndex]!)
+        ) {
           foundConflict = true;
           break;
         }
       }
 
-      proverInfos = proverInfos.map((pi, i) => ({
-        ...pi,
-        syncCommitteeHash: committeeHashes[i],
-      }));
+      proverInfos = proverInfos.reduce(
+        (acc: ProverInfoL[], pi: ProverInfoL, i: number) => {
+          if (committeeHashes[i] !== null) {
+            acc.push({
+              ...pi,
+              syncCommitteeHash: committeeHashes[i]!,
+            });
+          }
+          return acc;
+        },
+        [],
+      );
 
       if (foundConflict) {
         proverInfos = await this.tournament(
@@ -183,9 +238,21 @@ export class OptimisticLightClient extends BaseClient {
           period,
           lastCommitteeHash,
         );
-        if (proverInfos.length < 2) break;
       }
-      lastCommitteeHash = proverInfos[0].syncCommitteeHash;
+
+      if(proverInfos.length === 0) {
+        throw new Error('none of the provers responded honestly :(');
+      }
+      else if(proverInfos.length === 1) {
+        try {
+          lastCommitteeHash = await this.provers[proverInfos[0].index].getCommitteeHash(currentPeriod, currentPeriod, this.batchSize);
+          break;
+        } catch(e) {
+          throw new Error(`none of the provers responded honestly :( : ${e.message}`);
+        }
+      } else  {
+        lastCommitteeHash = proverInfos[0].syncCommitteeHash;
+      }
     }
 
     for (const p of proverInfos) {

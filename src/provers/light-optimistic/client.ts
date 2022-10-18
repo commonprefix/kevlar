@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { handleGETRequest } from '../../utils.js';
 import { IProver } from '../../clients/optimistic/iprover.js';
 import { LightClientUpdate, Bytes32 } from '../../types.js';
 import { HashesSSZ, CommitteeSSZ, LightClientUpdateSSZ } from '../../ssz.js';
@@ -10,25 +10,20 @@ export class LightOptimisticProver implements IProver {
   constructor(protected serverURL: string) {}
 
   async getCommittee(period: number | 'latest'): Promise<Uint8Array[]> {
-    const res = await axios.get(`${this.serverURL}/sync-committee/${period}`, {
-      responseType: 'arraybuffer',
-    });
-    return CommitteeSSZ.deserialize(res.data);
+    const res = await handleGETRequest(`${this.serverURL}/sync-committee/${period}`);
+    return CommitteeSSZ.deserialize(res);
   }
 
   async getSyncUpdate(period: number): Promise<LightClientUpdate> {
-    const res = await axios.get(`${this.serverURL}/sync-committee/${period}`, {
-      responseType: 'arraybuffer',
-    });
-    return LightClientUpdateSSZ.deserialize(res.data);
+    const res = await handleGETRequest(`${this.serverURL}/sync-committee/${period}`);
+    return LightClientUpdateSSZ.deserialize(res);
   }
 
   async _getHashes(startPeriod: number, count: number): Promise<Uint8Array[]> {
-    const res = await axios.get(
-      `${this.serverURL}/sync-committee/hashes?startPeriod=${startPeriod}&maxCount=${count}`,
-      { responseType: 'arraybuffer' },
+    const res = await handleGETRequest(
+      `${this.serverURL}/sync-committee/hashes?startPeriod=${startPeriod}&maxCount=${count}`
     );
-    return HashesSSZ.deserialize(res.data);
+    return HashesSSZ.deserialize(res);
   }
 
   async getCommitteeHash(

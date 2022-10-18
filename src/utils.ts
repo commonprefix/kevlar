@@ -1,13 +1,8 @@
-// import * as https from 'https';
-// import * as http from 'http';
-// import { URL } from 'url';
-// import * as net from 'net';
-
 import Decimal from 'decimal.js';
 import { toHexString, fromHexString } from '@chainsafe/ssz';
 import bls from '@chainsafe/bls/switchable';
-// import seedrandom from 'seedrandom';
 import _ from 'lodash';
+import axios from 'axios';
 
 export function logFloor(x: number, base: number = 2) {
   return Decimal.log(x, base).floor().toNumber();
@@ -99,66 +94,25 @@ export async function wait(ms: number) {
   });
 }
 
-export type RequestResult = {
-  bytesRead: number;
-  bytesWritten: number;
-  data: object | Buffer;
-};
 
-const REQUEST_TIMEOUT = 10 * 1000;
-
-// export async function handleHTTPSRequest(
-//   method: 'GET' | 'POST',
-//   url: string,
-//   isBuffer: boolean = false,
-//   logging: boolean = true,
-// ): Promise<RequestResult> {
-//   return new Promise((resolve, reject) => {
-//     const timer = setTimeout(
-//       () => reject(new Error(`Timeout`)),
-//       REQUEST_TIMEOUT,
-//     );
-
-//     if (logging) console.log(`${method} ${url}`);
-//     const data: any[] = [];
-//     const option = {
-//       method,
-//     };
-
-//     let socket: net.Socket;
-
-//     const _url = new URL(url);
-//     const req = (_url.protocol === 'http:' ? http : https).request(
-//       url,
-//       option,
-//       resp => {
-//         resp.on('data', chunk => data.push(chunk));
-//         resp.on('end', () => {
-//           clearTimeout(timer);
-//           resolve({
-//             data: isBuffer
-//               ? Buffer.concat(data)
-//               : JSON.parse(Buffer.concat(data).toString()),
-//             bytesRead: socket.bytesRead,
-//             bytesWritten: socket.bytesWritten,
-//           });
-//         });
-//       },
-//     );
-
-//     req.setTimeout(REQUEST_TIMEOUT);
-//     req.on('socket', _socket => (socket = _socket));
-//     req.on('error', err => {
-//       clearTimeout(timer);
-//       reject(err);
-//     });
-//     req.on('timeout', () => {
-//       req.destroy(new Error('timeout'));
-//     });
-
-//     req.end();
-//   });
-// }
+export async function handleGETRequest(
+  url: string,
+  isBuffer: boolean = true,
+  retry: number = 5
+): Promise<any> {
+  if (retry < 0) {
+    throw Error(`GET request failed: ${url}`);
+  }
+  try {
+    const { data } = await axios.get(
+      url,
+      isBuffer ? { responseType: 'arraybuffer' } : undefined,
+    );
+    return data;
+  } catch(e) {
+    return handleGETRequest(url, isBuffer, retry - 1);
+  }
+}
 
 export function deepTypecast<T>(
   obj: any,

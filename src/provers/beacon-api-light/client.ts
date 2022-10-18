@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { handleGETRequest } from '../../utils.js';
 import * as altair from '@lodestar/types/altair';
 import { IProver } from '../../clients/light/iprover.js';
 import { LightClientUpdate } from '../../types.js';
@@ -13,10 +13,11 @@ export class BeaconAPIProver implements IProver {
     startPeriod: number,
     maxCount: number,
   ): Promise<LightClientUpdate[]> {
-    const res = await axios.get(
+    const res = await handleGETRequest(
       `${this.serverURL}/eth/v1/beacon/light_client/updates?start_period=${startPeriod}&count=${maxCount}`,
+      false
     );
-    return res.data.data.map((u: any) =>
+    return res.data.map((u: any) =>
       altair.ssz.LightClientUpdate.fromJson(u),
     );
   }

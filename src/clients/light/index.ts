@@ -26,26 +26,34 @@ export class LightClient extends BaseClient {
     startCommittee: Uint8Array[],
   ): Promise<{ syncCommittee: Uint8Array[]; period: number }> {
     for (let period = startPeriod; period < currentPeriod; period += 1) {
-      const update = await prover.getSyncUpdate(
-        period,
-        currentPeriod,
-        this.batchSize,
-      );
-      const validOrCommittee = this.syncUpdateVerifyGetCommittee(
-        startCommittee,
-        update,
-      );
+      try {
+        const update = await prover.getSyncUpdate(
+          period,
+          currentPeriod,
+          this.batchSize,
+        );
+        const validOrCommittee = this.syncUpdateVerifyGetCommittee(
+          startCommittee,
+          update,
+        );
 
-      if (!(validOrCommittee as boolean)) {
-        console.log(`Found invalid update at period(${period})`);
+        if (!(validOrCommittee as boolean)) {
+          console.log(`Found invalid update at period(${period})`);
+          return {
+            syncCommittee: startCommittee,
+            period,
+          };
+        }
+
+        if (this.store) await this.store.addUpdate(period, update);
+        startCommittee = validOrCommittee as Uint8Array[];
+      } catch(e) {
+        console.error(`failed to fetch sync update for period(${period})`);
         return {
           syncCommittee: startCommittee,
           period,
         };
       }
-
-      if (this.store) await this.store.addUpdate(period, update);
-      startCommittee = validOrCommittee as Uint8Array[];
     }
     return {
       syncCommittee: startCommittee,
