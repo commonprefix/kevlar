@@ -39,6 +39,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
     "start": "node ./dist/provers/start-server.js",
     "rpc-proxy": "npx ts-node ./src/rpc-bundle/start-rpc.ts"
   },
