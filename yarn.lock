@@ -425,10 +425,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lightclients/patronum@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.8.tgz#0997cff4ddeead94db27a5d214fbea70b1691729"
-  integrity sha512-rjXFtnepmF5KR7R6gZE2qft9p2EVnxBSOYVYd9DCIvpuCG1jkv0AZXwQMzuTS5BaRKGXi3SmZ4D/zombWI1wKA==
+"@lightclients/patronum@0.1.9-0":
+  version "0.1.9-0"
+  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.9-0.tgz#0e3a394b858a8171af6d57f2f68ed987b9eb919c"
+  integrity sha512-4dhzd5mNZnLUk1lL3wCSbaj2EBMp8j+JVPfNPbGrhH7Sv+jNYfDaUU99V4HDZslqsKZHBuSzxNukiOlqQWO4qQ==
   dependencies:
     "@ethereumjs/block" "4.0.0"
     "@ethereumjs/blockchain" "6.0.0"
@@ -1853,6 +1853,13 @@ eth-lib@^0.1.26:
     ws "^3.0.0"
     xhr-request-promise "^0.1.2"
 
+eth-rpc-errors@4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/eth-rpc-errors/-/eth-rpc-errors-4.0.3.tgz#6ddb6190a4bf360afda82790bb7d9d5e724f423a"
+  integrity sha512-Z3ymjopaoft7JDoxZcEb3pwdGh7yiYMhOwm2doUt6ASXlMavpNlK6Cre0+IMl2VSGyEU9rkiperQhp5iRxn5Pg==
+  dependencies:
+    fast-safe-stringify "^2.0.6"
+
 ethereum-bloom-filters@^1.0.6:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/ethereum-bloom-filters/-/ethereum-bloom-filters-1.0.10.tgz#3ca07f4aed698e75bd134584850260246a5fed8a"
@@ -2016,6 +2023,11 @@ fast-json-stable-stringify@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz#874bf69c6f404c2b5d99c481341399fd55892633"
   integrity sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==
+
+fast-safe-stringify@^2.0.6:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.1.1.tgz#c406a83b6e70d9e35ce3b30a81141df30aeba884"
+  integrity sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==
 
 fecha@^4.2.0:
   version "4.2.3"
