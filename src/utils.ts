@@ -97,7 +97,7 @@ export async function wait(ms: number) {
 export async function handleGETRequest(
   url: string,
   isBuffer: boolean = true,
-  retry: number = 5,
+  retry: number = 3,
 ): Promise<any> {
   if (retry < 0) {
     throw Error(`GET request failed: ${url}`);
@@ -109,6 +109,7 @@ export async function handleGETRequest(
     );
     return data;
   } catch (e) {
+    console.error(`failed GET request (${url}): ${e.message}`);
     return handleGETRequest(url, isBuffer, retry - 1);
   }
 }
