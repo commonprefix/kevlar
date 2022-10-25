@@ -2,15 +2,15 @@ import { createAsyncMiddleware } from 'json-rpc-engine';
 import { getJSONRPCServer } from '@lightclients/patronum';
 import { ClientManager } from './client-manager.js';
 import { ClientType } from '../constants.js';
-import { defaultBeaconAPIURL, defaultProvers, defaultPublicRPC } from './constants';
+import { defaultBeaconAPIURL, defaultProvers, defaultPublicRPC } from './constants.js';
 import { EthereumRpcError, ethErrors } from 'eth-rpc-errors';
 
 // TODO: fix types
-function getRPCLightClientMiddleware(network: number) {
+export function getRPCLightClientMiddleware(network: number) {
   const clientType = ClientType.optimistic;
   const beaconAPIURL = defaultBeaconAPIURL[network];
   const proverURLs = defaultProvers[clientType][network];
-  const providerURL = defaultPublicRPC[network][0]; 
+  const [providerURL] = defaultPublicRPC[network]; 
 
   const cm = new ClientManager(
     network,
