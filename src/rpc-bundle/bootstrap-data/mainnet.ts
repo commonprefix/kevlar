@@ -1,8 +1,8 @@
-{
-  "genesis_time": "1606824023",
-  "genesis_validator_root": "0x4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95",
-  "slot": "2390232",
-  "committee_pk": [
+export const mainnetConfig = {
+  genesis_time: "1606824023",
+  genesis_validator_root: "0x4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95",
+  slot: "2390232",
+  committee_pk: [
     "0xa7ecfb69d8c08ee7c4155ac69adda7393593e6614b349cf83e07586a2b3fce780a54ecf31f1536b35f428a4f75263ac0",
     "0xa1c78c5cf35f1a5b398ce01a7b2b3333d59886e68e257d8eb06a3e893456a8b2d201a5285a0653285bdabef409a0859a",
     "0xb1a62050ac40e852adfd2e5903d3b62e12bf5b8310222e0a4f9eef2ef1d7a0ad0cdc2c196c81578345038e7bd5525712",

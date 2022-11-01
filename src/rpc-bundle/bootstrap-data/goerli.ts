@@ -1,8 +1,8 @@
-{
-  "genesis_time": "1616508000",
-  "genesis_validator_root": "0x043db0d9a83813551ee2f33450d23797757d430911a9320530ad8a0eabc43efb",
-  "slot": "3818142",
-  "committee_pk": [
+export const goerliConfig = {
+  genesis_time: "1616508000",
+  genesis_validator_root: "0x043db0d9a83813551ee2f33450d23797757d430911a9320530ad8a0eabc43efb",
+  slot: 3818142,
+  committee_pk: [
     "0xb4a535d478f94ddae124acea242b99fc1298e8244c2a0a1f73f12ae90dfb2c1919ba458e00ba02886d2594a4b7f3a9e7",
     "0x8de73e4c4f624c3de8390a18335b45e8ff9277a315458f5d5bee80a7ddb143fd9fe9ad2e246d848bbb99de8665430c5e",
     "0xa222653ed8bae065bd2adea8bb2362c145b78ff8bcac9a122c88bdc55744718fcffae08febb1443f9e46876a56bd5485",
