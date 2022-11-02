@@ -23,7 +23,7 @@ export function getRPCLightClientMiddleware(network: number) {
   let server: any = null;
 
   return createAsyncMiddleware(async (req: any, res: any, next: any) => {
-    if(server !== null) {
+    if(server === null) {
       const provider = await syncPromise;
       server = getJSONRPCServer(provider);
     }
