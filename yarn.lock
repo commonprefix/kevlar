@@ -425,10 +425,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lightclients/patronum@0.1.9-0":
-  version "0.1.9-0"
-  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.9-0.tgz#0e3a394b858a8171af6d57f2f68ed987b9eb919c"
-  integrity sha512-4dhzd5mNZnLUk1lL3wCSbaj2EBMp8j+JVPfNPbGrhH7Sv+jNYfDaUU99V4HDZslqsKZHBuSzxNukiOlqQWO4qQ==
+"@lightclients/patronum@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.9.tgz#c9cb3e1934dfc7214b1aa506d629c34decdee083"
+  integrity sha512-xtiD/0xv8KLfEkDxCHKsuzhyIhq+b3X/ZLQdqU7m7vnR2s/u2WALeqiHNTG2dbLVhrpiD0TQQoLfmXuVTPJjGA==
   dependencies:
     "@ethereumjs/block" "4.0.0"
     "@ethereumjs/blockchain" "6.0.0"
@@ -437,6 +437,7 @@
     "@ethereumjs/tx" "4.0.0"
     "@ethereumjs/util" "8.0.0"
     "@ethereumjs/vm" "6.0.0"
+    axios "1.1.2"
     json-rpc-2.0 "1.4.1"
     lodash "4.17.21"
     rlp "3.0.0"
@@ -972,6 +973,15 @@ axios@0.27.2:
   dependencies:
     follow-redirects "^1.14.9"
     form-data "^4.0.0"
+
+axios@1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.1.2.tgz#8b6f6c540abf44ab98d9904e8daf55351ca4a331"
+  integrity sha512-bznQyETwElsXl2RK7HLLwb5GPpOLlycxHCtrpDR/4RqqBzjARaOTo3jz4IgtntWUYee7Ne4S8UHd92VCuzPaWA==
+  dependencies:
+    follow-redirects "^1.15.0"
+    form-data "^4.0.0"
+    proxy-from-env "^1.1.0"
 
 balanced-match@^1.0.0:
   version "1.0.2"
@@ -2072,7 +2082,7 @@ fn.name@1.x.x:
   resolved "https://registry.yarnpkg.com/fn.name/-/fn.name-1.1.0.tgz#26cad8017967aea8731bc42961d04a3d5988accc"
   integrity sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==
 
-follow-redirects@^1.14.9:
+follow-redirects@^1.14.9, follow-redirects@^1.15.0:
   version "1.15.2"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.2.tgz#b460864144ba63f2681096f274c4e57026da2c13"
   integrity sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==
@@ -3447,6 +3457,11 @@ proxy-addr@~2.0.7:
   dependencies:
     forwarded "0.2.0"
     ipaddr.js "1.9.1"
+
+proxy-from-env@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/proxy-from-env/-/proxy-from-env-1.1.0.tgz#e102f16ca355424865755d2c9e8ea4f24d58c3e2"
+  integrity sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==
 
 psl@^1.1.28:
   version "1.9.0"
