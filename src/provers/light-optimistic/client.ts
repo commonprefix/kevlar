@@ -13,21 +13,21 @@ export class LightOptimisticProver implements IProver {
     const res = await handleGETRequest(
       `${this.serverURL}/sync-committee/${period}`,
     );
-    return CommitteeSSZ.deserialize(res);
+    return CommitteeSSZ.deserialize(new Uint8Array(res));
   }
 
   async getSyncUpdate(period: number): Promise<LightClientUpdate> {
     const res = await handleGETRequest(
       `${this.serverURL}/sync-committee/${period}`,
     );
-    return LightClientUpdateSSZ.deserialize(res);
+    return LightClientUpdateSSZ.deserialize(new Uint8Array(res));
   }
 
   async _getHashes(startPeriod: number, count: number): Promise<Uint8Array[]> {
     const res = await handleGETRequest(
       `${this.serverURL}/sync-committee/hashes?startPeriod=${startPeriod}&maxCount=${count}`,
     );
-    return HashesSSZ.deserialize(res);
+    return HashesSSZ.deserialize(new Uint8Array(res));
   }
 
   async getCommitteeHash(
