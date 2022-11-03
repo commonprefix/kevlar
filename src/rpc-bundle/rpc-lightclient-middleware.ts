@@ -37,6 +37,6 @@ export function getRPCLightClientMiddleware(network: number) {
       throw ethErrors.rpc.internal({
         data: _res.error,
       });
-    res.result = _res;
+    res.result = _res.result;
   });
 }
