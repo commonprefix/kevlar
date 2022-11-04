@@ -101,7 +101,7 @@ export abstract class BaseClient {
     );
     const updateJSON = res.data.data;
     const update = this.optimisticUpdateFromJSON(updateJSON);
-    const verify = this.optimisticUpdateVerify(this.latestCommittee, update);
+    const verify = await this.optimisticUpdateVerify(this.latestCommittee, update);
     // TODO: check the update agains the latest sync commttee
     if (!verify.correct) {
       console.error(`Invalid Optimistic Update: ${verify.reason}`);
@@ -162,14 +162,14 @@ export abstract class BaseClient {
     };
   }
 
-  protected syncUpdateVerifyGetCommittee(
+  protected async syncUpdateVerifyGetCommittee(
     prevCommittee: Uint8Array[],
     update: LightClientUpdate,
-  ): false | Uint8Array[] {
+  ): Promise<false | Uint8Array[]> {
     const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
     try {
       // check if the update has valid signatures
-      assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
+      await assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
       return update.nextSyncCommittee.pubkeys;
     } catch (e) {
       console.error(e);
@@ -177,11 +177,11 @@ export abstract class BaseClient {
     }
   }
 
-  protected syncUpdateVerify(
+  protected async syncUpdateVerify(
     prevCommittee: Uint8Array[],
     currentCommittee: Uint8Array[],
     update: LightClientUpdate,
-  ): boolean {
+  ): Promise<boolean> {
     // check if update.nextSyncCommittee is currentCommittee
     const isUpdateValid = isCommitteeSame(
       update.nextSyncCommittee.pubkeys,
@@ -192,7 +192,7 @@ export abstract class BaseClient {
     const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
     try {
       // check if the update has valid signatures
-      assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
+      await assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
       return true;
     } catch (e) {
       return false;
@@ -208,10 +208,10 @@ export abstract class BaseClient {
     };
   }
 
-  optimisticUpdateVerify(
+  async optimisticUpdateVerify(
     committee: Uint8Array[],
     update: OptimisticUpdate,
-  ): VerifyWithReason {
+  ): Promise<VerifyWithReason> {
     const { attestedHeader: header, syncAggregate } = update;
 
     // TODO: fix this
@@ -225,7 +225,7 @@ export abstract class BaseClient {
     const headerBlockRootHex = toHexString(headerBlockRoot);
     const committeeFast = this.deserializeSyncCommittee(committee);
     try {
-      assertValidSignedHeader(
+      await assertValidSignedHeader(
         this.chainConfig,
         committeeFast,
         syncAggregate,

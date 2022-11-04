@@ -32,7 +32,7 @@ export class LightClient extends BaseClient {
           currentPeriod,
           this.batchSize,
         );
-        const validOrCommittee = this.syncUpdateVerifyGetCommittee(
+        const validOrCommittee = await this.syncUpdateVerifyGetCommittee(
           startCommittee,
           update,
         );

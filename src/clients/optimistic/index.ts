@@ -44,7 +44,7 @@ export class OptimisticLightClient extends BaseClient {
   ): Promise<boolean> {
     try {
       const update = await this.provers[proverIndex].getSyncUpdate(period - 1);
-      const validOrCommittee = this.syncUpdateVerifyGetCommittee(
+      const validOrCommittee = await this.syncUpdateVerifyGetCommittee(
         prevCommittee,
         update,
       );

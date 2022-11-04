@@ -100,10 +100,10 @@ export class SuperlightClient extends BaseClient {
       // ask both parties for sync update
       // related to previous period
       const update1 = await prover1.getSyncUpdate(lastPeriod, 1);
-      is1Correct = this.syncUpdateVerify(prevCommittee, committee1, update1);
+      is1Correct = await this.syncUpdateVerify(prevCommittee, committee1, update1);
 
       const update2 = await prover2.getSyncUpdate(lastPeriod, 1);
-      is2Correct = this.syncUpdateVerify(prevCommittee, committee2, update2);
+      is2Correct = await this.syncUpdateVerify(prevCommittee, committee2, update2);
     }
 
     if (is1Correct && !is2Correct) return true;

@@ -29,7 +29,7 @@
     "@lightclients/patronum": "0.1.10",
     "@lodestar/api": "^1.0.0",
     "@lodestar/config": "^1.0.0",
-    "@lodestar/light-client": "https://gitpkg.now.sh/shresthagrawal/lodestar/packages/light-client?edc9b76aaeb9d480011ae1f2302e73787d84e69e",
+    "@lodestar/light-client": "https://gitpkg.now.sh/shresthagrawal/lodestar/packages/light-client?421d459a6af87165c5ca4553ef66dfaee7801fdc",
     "@lodestar/types": "^1.0.0",
     "@types/lodash": "4.14.185",
     "axios": "0.27.2",
