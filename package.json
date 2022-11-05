@@ -26,7 +26,7 @@
     "@chainsafe/as-sha256": "^0.3.1",
     "@chainsafe/bls": "^7.1.1",
     "@chainsafe/ssz": "^0.9.2",
-    "@lightclients/patronum": "0.1.10",
+    "@lightclients/patronum": "0.1.11",
     "@lodestar/api": "^1.0.0",
     "@lodestar/config": "^1.0.0",
     "@lodestar/light-client": "https://gitpkg.now.sh/shresthagrawal/lodestar/packages/light-client?421d459a6af87165c5ca4553ef66dfaee7801fdc",
