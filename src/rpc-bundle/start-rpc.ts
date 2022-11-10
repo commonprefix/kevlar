@@ -56,9 +56,7 @@ async function main() {
     );
     const beaconAPIURL =
       (argv['beacon-api'] as string) ||
-      (network === 5
-        ? 'https://lodestar-goerli.chainsafe.io'
-        : 'https://lodestar-mainnet.chainsafe.io');
+      defaultBeaconAPIURL[network];
     const providerURL = (argv.rpc as string) || getDefaultRPC(network);
 
     const cm = new ClientManager(

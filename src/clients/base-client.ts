@@ -97,7 +97,7 @@ export abstract class BaseClient {
 
   protected async getLatestExecution(): Promise<ExecutionInfo | null> {
     const res = await axios.get(
-      `${this.beaconChainAPIURL}/eth/v1/beacon/light_client/optimistic_update/`,
+      `${this.beaconChainAPIURL}/eth/v1/beacon/light_client/optimistic_update`,
     );
     const updateJSON = res.data.data;
     const update = this.optimisticUpdateFromJSON(updateJSON);
@@ -200,12 +200,7 @@ export abstract class BaseClient {
   }
 
   optimisticUpdateFromJSON(update: any): OptimisticUpdate {
-    return {
-      syncAggregate: altair.ssz.SyncAggregate.fromJson(update.sync_aggregate),
-      attestedHeader: phase0.ssz.BeaconBlockHeader.fromJson(
-        update.attested_header,
-      ),
-    };
+    return altair.ssz.LightClientOptimisticUpdate.fromJson(update);
   }
 
   async optimisticUpdateVerify(
