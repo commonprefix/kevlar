@@ -425,10 +425,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lightclients/patronum@0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.10.tgz#0ff675a87b6a5ae108bcb016a55c6d345622510d"
-  integrity sha512-Fkl0+f8uY1IXmLK893GvQE4nJkoCWdaYk8EB0ibkre12nAdVHN+lG+9CQVOf6HKTvOvT4tKkxpWdAOy28XHq+A==
+"@lightclients/patronum@0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@lightclients/patronum/-/patronum-0.1.11.tgz#535c33193db17440fa3af1a745228e7342dc30b5"
+  integrity sha512-2DV8EJBLl2xVkllcjeOJLoGXnZlWYm6bithE0jclF+shV6x4UZCZifPWf8+ufBDwXizxIAgjcJ2JXpepRgtlOw==
   dependencies:
     "@ethereumjs/block" "4.0.0"
     "@ethereumjs/blockchain" "6.0.0"
@@ -509,6 +509,11 @@
     winston "^3.3.3"
     winston-daily-rotate-file "^4.5.5"
     winston-transport "^4.3.0"
+
+"@metamask/safe-event-emitter@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-2.0.0.tgz#af577b477c683fad17c619a78208cede06f9605c"
+  integrity sha512-/kSXhY692qiV1MXu6EeOZvg5nECLclxNXcKCxJ3cXQgYuRymRHpdx/t7JXfsK+JLjwA1e1c1/SBrlQYpusC29Q==
 
 "@noble/hashes@1.1.2", "@noble/hashes@^1.0.0", "@noble/hashes@~1.1.1":
   version "1.1.2"
@@ -1854,7 +1859,7 @@ eth-lib@^0.1.26:
     ws "^3.0.0"
     xhr-request-promise "^0.1.2"
 
-eth-rpc-errors@4.0.3:
+eth-rpc-errors@4.0.3, eth-rpc-errors@^4.0.2:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/eth-rpc-errors/-/eth-rpc-errors-4.0.3.tgz#6ddb6190a4bf360afda82790bb7d9d5e724f423a"
   integrity sha512-Z3ymjopaoft7JDoxZcEb3pwdGh7yiYMhOwm2doUt6ASXlMavpNlK6Cre0+IMl2VSGyEU9rkiperQhp5iRxn5Pg==
@@ -2708,6 +2713,14 @@ json-rpc-2.0@1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/json-rpc-2.0/-/json-rpc-2.0-1.4.1.tgz#182349866ea04d7b692f099f8445b777bae74eab"
   integrity sha512-OX1NJhpIfuK4GjDnJ/gKtZy1HOYo0l4eL0a4rb0rNeQheX1xlyQ9+JMmPzs/sFNthpS/TXKPWlGo09X7B5l81A==
+
+json-rpc-engine@6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/json-rpc-engine/-/json-rpc-engine-6.1.0.tgz#bf5ff7d029e1c1bf20cb6c0e9f348dcd8be5a393"
+  integrity sha512-NEdLrtrq1jUZyfjkr9OCz9EzCNhnRyWtt1PAnvnhwy6e8XETS0Dtc+ZNCO2gvuAoKsIn2+vCSowXTYE4CkgnAQ==
+  dependencies:
+    "@metamask/safe-event-emitter" "^2.0.0"
+    eth-rpc-errors "^4.0.2"
 
 json-schema-traverse@^0.4.1:
   version "0.4.1"

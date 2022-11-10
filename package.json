@@ -36,6 +36,7 @@
     "decimal.js": "10.4.1",
     "dotenv": "16.0.2",
     "eth-rpc-errors": "4.0.3",
+    "json-rpc-engine": "6.1.0",
     "yargs": "17.5.1"
   },
   "scripts": {
