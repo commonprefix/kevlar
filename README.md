@@ -1,4 +1,5 @@
 # Kevlar
+
 [![Join the chat at https://discord.gg/ePV3prSPGW](https://img.shields.io/badge/chat-on%20discord-blue.svg)](https://discord.gg/ePV3prSPGW)
 ![KevlarArchitecture](./kevlar-architecture.png)
 

@@ -4,10 +4,12 @@ export const defaultBeaconAPIURL: { [network: number]: string } = {
   // 1: 'https://lodestar-mainnet.chainsafe.io',
   1: 'http://testing.mainnet.beacon-api.nimbus.team',
   // 5: 'https://lodestar-goerli.chainsafe.io',
-  5: 'http://testing.prater.beacon-api.nimbus.team'
+  5: 'http://testing.prater.beacon-api.nimbus.team',
 };
 
-export const defaultProvers: { [client: string]: { [network: number]: string[] } } = {
+export const defaultProvers: {
+  [client: string]: { [network: number]: string[] };
+} = {
   [ClientType.optimistic]: {
     1: [
       'https://light-optimistic-mainnet-1.herokuapp.com',

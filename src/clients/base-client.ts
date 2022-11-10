@@ -101,7 +101,10 @@ export abstract class BaseClient {
     );
     const updateJSON = res.data.data;
     const update = this.optimisticUpdateFromJSON(updateJSON);
-    const verify = await this.optimisticUpdateVerify(this.latestCommittee, update);
+    const verify = await this.optimisticUpdateVerify(
+      this.latestCommittee,
+      update,
+    );
     // TODO: check the update agains the latest sync commttee
     if (!verify.correct) {
       console.error(`Invalid Optimistic Update: ${verify.reason}`);
@@ -169,7 +172,11 @@ export abstract class BaseClient {
     const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
     try {
       // check if the update has valid signatures
-      await assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
+      await assertValidLightClientUpdate(
+        this.chainConfig,
+        prevCommitteeFast,
+        update,
+      );
       return update.nextSyncCommittee.pubkeys;
     } catch (e) {
       console.error(e);
@@ -192,7 +199,11 @@ export abstract class BaseClient {
     const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
     try {
       // check if the update has valid signatures
-      await assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
+      await assertValidLightClientUpdate(
+        this.chainConfig,
+        prevCommitteeFast,
+        update,
+      );
       return true;
     } catch (e) {
       return false;

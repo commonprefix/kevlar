@@ -8,7 +8,11 @@ import { hideBin } from 'yargs/helpers';
 import { startServer } from '@lightclients/patronum';
 import { ClientManager } from './client-manager.js';
 import { ClientType } from '../constants.js';
-import { defaultBeaconAPIURL, defaultProvers, defaultPublicRPC } from './constants.js';
+import {
+  defaultBeaconAPIURL,
+  defaultProvers,
+  defaultPublicRPC,
+} from './constants.js';
 
 const getDefaultRPC = (network: number): string => {
   const rpc = defaultPublicRPC[network];
@@ -55,8 +59,7 @@ async function main() {
       argv.provers ? (argv.provers as string).split(',') : [],
     );
     const beaconAPIURL =
-      (argv['beacon-api'] as string) ||
-      defaultBeaconAPIURL[network];
+      (argv['beacon-api'] as string) || defaultBeaconAPIURL[network];
     const providerURL = (argv.rpc as string) || getDefaultRPC(network);
 
     const cm = new ClientManager(
