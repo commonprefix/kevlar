@@ -181,7 +181,7 @@ export abstract class BaseClient {
     console.log('| 📥 deposit_root', eth1_data.deposit_root)
     console.log('| 👥 deposit_count', eth1_data.deposit_count)
     // console.log('| sync_aggregate', blockJSON.sync_aggregate)
-    console.log('| attestations', attestations[0])
+    // console.log('| attestations', attestations[0])
     const atts = []
     for (let i = 0; i < attestations.length; i++) {
       // console.log(digest(concatUint8Array([pubkeys[i]])));

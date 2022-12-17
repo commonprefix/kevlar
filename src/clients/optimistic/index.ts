@@ -199,15 +199,22 @@ export class OptimisticLightClient extends BaseClient {
       syncCommitteeHash: new Uint8Array(),
     }));
 
+    const proverArray = [];
+
     for (let period = startPeriod + 1; period <= currentPeriod; period++) {
       const committeeHashes: (Uint8Array | null)[] = await Promise.all(
         proverInfos.map(async pi => {
           try {
-            // console.log('PROVERS?? ', await this.provers[pi.index].getCommitteeHash(
+            // console.log('SYNC FROM GENESIS PROVERS', await this.provers[pi.index].getCommitteeHash(
             //   period,
             //   currentPeriod,
             //   this.batchSize,
             // ))
+            // const res = await this.provers[pi.index].getCommitteeHash(
+            //   period,
+            //   currentPeriod,
+            //   this.batchSize,
+            // )           
             return await this.provers[pi.index].getCommitteeHash(
               period,
               currentPeriod,
@@ -222,7 +229,35 @@ export class OptimisticLightClient extends BaseClient {
           }
         }),
       );
+      for (let i = 0; i < committeeHashes.length; i++) {
+        // console.log(digest(concatUint8Array([pubkeys[i]])));
+        console.log(`
+.____________________________________________________
+| Prover node index #${i}
+| Period: ${period}
+| Array of Sync Committee Member Hashes: ${committeeHashes[i]}`);
+        // warn of collision -- does this actually do that if it happens?
+        if (committeeHashes[i - 1] === committeeHashes[i]) {
+          console.log(`
+| 🚫 COMMITTEE HASH MISMATCH
+          `)
+        } else if (committeeHashes[i] === committeeHashes[0]){ 
+          console.log(`
+| 🌳 COMMITTEE HASH MATCHES OTHER PROVER OF SAME NODE
+                  `)
+                } else {
+                  console.log(`
+|       ↑           ↑          ↑           ↑
+| 🌳 COMMITTEE HASH MATCHES OTHER PROVER OF SAME NODE
+.____________________________________________________
 
+                      ^
+                      |
+                      |
+`)
+                  }
+        proverArray.push(committeeHashes[i])
+      }
       const nonNullIndex = committeeHashes.findIndex(v => v !== null);
       if (nonNullIndex === -1) {
         proverInfos = [];
@@ -298,6 +333,8 @@ export class OptimisticLightClient extends BaseClient {
         );
       }
     }
+    console.log(`| ${proverArray} Prover Array`);
+    console.log(`| ${proverInfos.length} Provers`);
     throw new Error('none of the provers responded honestly :(');
   }
 }

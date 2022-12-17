@@ -63,9 +63,9 @@ export class ClientManager {
         `
                     ↑↑↑
 .--------------------------------------------------------------
-| ✨ LATEST VERIFIED BLOCKHEADER 
-| blockNumber ${ei.blockNumber}
-| blockHash ${ei.blockhash}`,
+| ////////✨ LATEST VERIFIED BLOCKHEADER ✨/////////////////////// 
+| 📦 blockNumber ${ei.blockNumber}
+| 🧱 blockHash ${ei.blockhash}`,
       );
       provider.update(ei.blockhash, ei.blockNumber);
     });
