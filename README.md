@@ -10,11 +10,14 @@ Kevlar but with visual changes to the terminal logs.
 
 > Next, it logs information
 
-![KevlarVisualDemo1](./kevlar-visual-demo-1.png)
+![KevlarVisualDemo1](./kevlar-demo-1.png)
 
 > Currently, the client only displays the first attestation and first transaction of each block to keep easier to follow along visually in the terminal
 
-![KevlarVisualDemo2](./kevlar-visual-demo-2.png)
+![KevlarVisualDemo2](./kevlar-demo-2.png)
+
+## Architecture Diagram
+
 ![KevlarArchitecture](./kevlar-architecture.png)
 
 Kevlar is a CLI tool to run a light client-based RPC Proxy for PoS Ethereum. Kevlar can be used to make your Metamask or any RPC-based wallet completely trustless! Kevlar first syncs to the latest header of the beacon chain and then starts an RPC server. This local RPC server can be added to MetaMask or any other RPC-based wallet. Every RPC call made by the wallet is now verified using Merkle Inclusion proofs to the latest block header. Currently Kevlar supports two kinds of sync methods: the **Light Sync** based on the light client sync protocol specified by the Ethereum Specification and the **Optimistic Sync** (which is 100x faster than Light Sync) based on construction from the research paper [Proofs of Proof of Stake in Sublinear Complexity](https://arxiv.org/abs/2209.08673).
