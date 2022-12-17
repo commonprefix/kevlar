@@ -1,8 +1,14 @@
-# Kevlar
+# Kevlar Visual
 
 [![Join the chat at https://discord.gg/ePV3prSPGW](https://img.shields.io/badge/chat-on%20discord-blue.svg)](https://discord.gg/ePV3prSPGW)
 
-Kevlar but with changes to the terminal logs.
+Kevlar but with visual changes to the terminal logs.
+
+> First, the client syncs with to the current blockheader
+
+![KevlarSyncDemo](./kevlar-sync-demo-1.png)
+
+> Next, it logs information
 
 ![KevlarVisualDemo1](./kevlar-visual-demo-1.png)
 
