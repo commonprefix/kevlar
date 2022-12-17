@@ -12,9 +12,7 @@ Kevlar but with visual changes to the terminal logs.
 
 ![KevlarVisualDemo1](./kevlar-visual-demo-1.png)
 
-
 > Currently, the client only displays the first attestation and first transaction of each block to keep easier to follow along visually in the terminal
-
 
 ![KevlarVisualDemo2](./kevlar-visual-demo-2.png)
 ![KevlarArchitecture](./kevlar-architecture.png)
