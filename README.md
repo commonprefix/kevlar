@@ -2,9 +2,16 @@
 
 [![Join the chat at https://discord.gg/ePV3prSPGW](https://img.shields.io/badge/chat-on%20discord-blue.svg)](https://discord.gg/ePV3prSPGW)
 
-## This repo serves to add a visual element to the actions being performed by the light client-based RPC Proxy, Kevlar
+```
+This repo serves to add a visual element to the actions being performed by the light client-based RPC Proxy, Kevlar
+```
 
 ![KevlarVisualDemo1](./kevlar-visual-demo-1.png)
+
+
+> Currently, the client only displays the first attestation and first transaction of each block to keep easier to follow along visually in the terminal
+
+
 ![KevlarVisualDemo2](./kevlar-visual-demo-2.png)
 ![KevlarArchitecture](./kevlar-architecture.png)
 
