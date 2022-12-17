@@ -52,6 +52,11 @@ export class OptimisticLightClient extends BaseClient {
       const committeeHash = this.getCommitteeHash(
         validOrCommittee as Uint8Array[],
       );
+      console.log(`
+| COMMITTEE HASH CHECK -------------------------
+| Latest: ${committeeHash}
+| Expected: ${expectedCommitteeHash}
+      `)
       return isUint8ArrayEq(committeeHash, expectedCommitteeHash);
     } catch (e) {
       console.error(
@@ -170,6 +175,7 @@ export class OptimisticLightClient extends BaseClient {
   protected async syncFromGenesis(): Promise<ProverInfo[]> {
     // get the tree size by currentPeriod - genesisPeriod
     const currentPeriod = this.getCurrentPeriod();
+    // get
     let startPeriod = this.genesisPeriod;
     console.log(
       `
@@ -197,6 +203,11 @@ export class OptimisticLightClient extends BaseClient {
       const committeeHashes: (Uint8Array | null)[] = await Promise.all(
         proverInfos.map(async pi => {
           try {
+            // console.log('PROVERS?? ', await this.provers[pi.index].getCommitteeHash(
+            //   period,
+            //   currentPeriod,
+            //   this.batchSize,
+            // ))
             return await this.provers[pi.index].getCommitteeHash(
               period,
               currentPeriod,

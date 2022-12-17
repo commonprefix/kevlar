@@ -180,9 +180,25 @@ export abstract class BaseClient {
     console.log('| 🦷 state_root', blockJSON.execution_payload.state_root)
     console.log('| 📥 deposit_root', eth1_data.deposit_root)
     console.log('| 👥 deposit_count', eth1_data.deposit_count)
-    console.log('| sync_aggregate', blockJSON.sync_aggregate)
+    // console.log('| sync_aggregate', blockJSON.sync_aggregate)
     console.log('| attestations', attestations[0])
-    console.log('| 💳 Transactions', transactions[0],`
+    const atts = []
+    for (let i = 0; i < attestations.length; i++) {
+      // console.log(digest(concatUint8Array([pubkeys[i]])));
+      // console.table(`| 🤝 Consensus Proof #${i + 1} ${digest(attestations[i])}`);
+      if (attestations[i - 1] == attestations[i]) {
+        console.log('ITS DOING SOMETHING ===============+<><><><><><><> 😂')
+      }
+      atts.push(i)
+    }
+    if (atts.length <= 100) {
+      console.log(`| 🟡 ${atts.length} of ${attestations.length} SYNC COMMITTEE public keys`);
+    } else if (atts.length <= 25) {
+      console.log(`| 🔴 ${atts.length} of ${attestations.length} SYNC COMMITTEE public keys`);
+    } else {
+      console.log(`| 🟢 ${atts.length} of ${attestations.length} SYNC COMMITTEE public keys`);
+    }
+    console.log(`| 💳 First Transaction of Block ${transactions[0]}
 |____________________________________________________
     `)
     const block = bellatrix.ssz.BeaconBlockBody.fromJson(blockJSON);
@@ -309,9 +325,16 @@ export abstract class BaseClient {
       return { correct: false, reason: 'invalid signatures' };
     }
 
-    const participation =
-      syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
-      console.log(`| 🧬 ${participation}: SYNC COMMITTEE Participants`)
+    const participation = syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
+    console.log(`| 🧬 ${participation}: SYNC COMMITTEE Participants`)
+
+    // if (atts.length <= attestations.length / 2) {
+    //   console.log(`| 🟡 ${atts.length} of ${attestations.length} SYNC COMMITTEE public keys`);
+    // } else if (atts.length <= attestations.length * 0.25) {
+    //   console.log(`| 🔴 ${atts.length} of ${attestations.length} SYNC COMMITTEE public keys`);
+    // } else {
+    //   console.log(`| 🟢 ${atts.length} of ${attestations.length} SYNC COMMITTEE public keys`);
+    // }
     if (participation < BEACON_SYNC_SUPER_MAJORITY) {
       return { correct: false, reason: 'insufficient number of signatures to verify' };
     }
