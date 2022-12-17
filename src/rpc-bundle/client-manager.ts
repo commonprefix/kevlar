@@ -53,9 +53,19 @@ export class ClientManager {
       blockhash,
       this.chain,
     );
+    console.log(`
+.--------------------------------------------------
+| VERIFYING PROVIDER RPC URL ${this.providerURL}
+|___-----------------------------------------------
+    `)
     this.client.subscribe(ei => {
       console.log(
-        `Recieved a new blockheader: ${ei.blockNumber} ${ei.blockhash}`,
+        `
+                    ↑↑↑
+.--------------------------------------------------------------
+| ✨ LATEST VERIFIED BLOCKHEADER 
+| blockNumber ${ei.blockNumber}
+| blockHash ${ei.blockhash}`,
       );
       provider.update(ei.blockhash, ei.blockNumber);
     });

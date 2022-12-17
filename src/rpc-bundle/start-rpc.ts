@@ -9,13 +9,13 @@ import { startServer } from '@lightclients/patronum';
 import { ClientManager } from './client-manager.js';
 import { ClientType } from '../constants.js';
 import {
-  defaultBeaconAPIURL,
-  defaultProvers,
-  defaultPublicRPC,
+  DEFAULT_BEACON_API_URL,
+  DEFAULT_PROVERS,
+  DEFAULT_PUBLIC_RPC_CHAIN_ID,
 } from './constants.js';
 
 const getDefaultRPC = (network: number): string => {
-  const rpc = defaultPublicRPC[network];
+  const rpc = DEFAULT_PUBLIC_RPC_CHAIN_ID[network];
   return rpc[Math.floor(Math.random() * rpc.length)];
 };
 
@@ -55,21 +55,21 @@ async function main() {
     const port = argv.port || (network === 5 ? 8547 : 8546);
     const clientType =
       argv.client === 'light' ? ClientType.light : ClientType.optimistic;
-    const proverURLs = defaultProvers[clientType][network].concat(
+    const proverURLs = DEFAULT_PROVERS[clientType][network].concat(
       argv.provers ? (argv.provers as string).split(',') : [],
     );
     const beaconAPIURL =
-      (argv['beacon-api'] as string) || defaultBeaconAPIURL[network];
+      (argv['beacon-api'] as string) || DEFAULT_BEACON_API_URL[network];
     const providerURL = (argv.rpc as string) || getDefaultRPC(network);
 
-    const cm = new ClientManager(
+    const clientManager = new ClientManager(
       network,
       clientType,
       beaconAPIURL,
       providerURL,
       proverURLs,
     );
-    const provider = await cm.sync();
+    const provider = await clientManager.sync();
     await startServer(provider, port);
   } catch (err) {
     console.error(err);

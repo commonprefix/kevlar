@@ -299,7 +299,7 @@ export class SuperlightClient extends BaseClient {
     }
 
     const winners = await this.tournament(validProverInfos);
-
+    
     for (const winner of winners) {
       const syncCommittee = await this.getVerifiedSyncCommittee(
         this.provers[winner.index],

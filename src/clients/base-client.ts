@@ -7,7 +7,7 @@ import { digest } from '@chainsafe/as-sha256';
 import { IBeaconConfig } from '@lodestar/config';
 import type { PublicKey } from '@chainsafe/bls/types';
 import bls from '@chainsafe/bls/switchable';
-import { ListCompositeType, fromHexString, toHexString } from '@chainsafe/ssz';
+import { fromHexString, toHexString } from '@chainsafe/ssz';
 import {
   computeSyncPeriodAtSlot,
   getCurrentSlot,
@@ -26,6 +26,46 @@ import {
   VerifyWithReason,
 } from './types.js';
 import { Bytes32, OptimisticUpdate, LightClientUpdate } from '../types.js';
+
+`
+.....                                                           
+..........                                                      
+...                                                    
+........                                                            
+.....................                                            
+......................                                         
+...........................                                    
+........................................                                 
+..............................................                              
+.................;;;     .;;;  .;;  .; .= .=.=..!*****######*****!!!====..:.~:. ~~~  --.   ,,,,
+..;      .;;   .;  ;; ;; ..=.=.!...********!!!...... . :.~~  --   -.    .,.  
+  .;:     .;   .;;  ;  . . =...!...........!.....;;.:.::~~. -.  ,,.    ...   
+  .::     .::  .:  ;; .;.;;;...==........!..=..;..:.~. ~. -.  ,,    ...     
+.::     .:   .:  . .; ;.;................;......~~ -. -.  ,.    ...     .
+..::    .:   :: .: .:.:...;.;.......=.....:..~-. -. ,.  ,.   ...      ..
+:        ,::    .:   :~ .:.:.::.::....;.;.......:.~~.-.-. ,. ...  ....     ....
+:::       ,:~    .~  .~  . .~..::::.::..:.:..:..~-..-.,,.,. ...  ...     ....  
+~:::      ,,~    ~~  .~ .~.~.~......:::::.....--.-,.,, .. ..  ....    ....    
+~:::      -~~   ,~  ~- .---..-.....~.......-..,.,..... ..  ...    ....      
+  ~~::      -~~   --  .-.-.--..-..-..-...,.,............. ...    ....        
+    ::~~      --   -- ,- ,,..,,,,....................... ...   ....        ..
+      :~~~     ~--  ,, -, ,,..,.................... ..  ..   ....       .....
+;         :~~-    ~,,  ~, .....--..~~..---,......... .. ...   ...       .....  
+;;          ;---    ,,  :. :.::.::..;====;:~~-,,.........  ....      .....     
+!*;::         ;--,   ;.. ;. ;;.;.=!..##$#*..:~-.-.......  ...     .....        
+** :::        =,,,  =.. =.=.!.*##$@.*..:.... ..  ...    .....           
+,    .. .................*!;:...., ...    .....            .
+................ .  ..    ....           .....
+,,..,..,..................,,---.~~.:.......                  
+-------------------........,,......,........,...,.--.-.~~.~....                
+~~~~---------------............,.,...........,,,.,,.---.--~~.~.....            
+~~~~~~~~~~~-------...-...........,..,,,..,...,,,,..,---.---~~.~~~.  ..         
+~~~~~~~~~~~-------.......-.....,..,...,,....,,,,,,,,,--- ,---~~  ,,~.          
+~~~~~~~~~~~-----......-................,....,,,,,,,, ,,----    ,~~~       ,    
+~~~~~~~~~------...........-......-...... ,,,,,,  ,,,,--     ,--~~       --:    
+~~~~~~ ~------......-......--.....  --....    -,,,,      -----         --~~    
+~ ~~~~~ --- ..-...... -......  -......    
+`
 
 export abstract class BaseClient {
   genesisCommittee: Uint8Array[];
@@ -71,7 +111,8 @@ export abstract class BaseClient {
       );
     const ei = await this.getLatestExecution();
     if (ei) return ei;
-    // delay for the next slot
+    // wait the duration of the POLLING_DELAY before 
+    // getNextValidExecutionInfo is executed again
     await new Promise(resolve => setTimeout(resolve, POLLING_DELAY));
     return this.getNextValidExecutionInfo(retry - 1);
   }
@@ -105,14 +146,12 @@ export abstract class BaseClient {
       this.latestCommittee,
       update,
     );
-    // TODO: check the update agains the latest sync commttee
+    // TODO: check the update against the latest sync commttee --------------------- ⚠️
     if (!verify.correct) {
       console.error(`Invalid Optimistic Update: ${verify.reason}`);
       return null;
     }
-    console.log(
-      `Optimistic update verified for slot ${updateJSON.attested_header.slot}`,
-    );
+    console.log('| 📊 Execution verified: ', verify.correct)
     return this.getExecutionFromBlockRoot(
       updateJSON.attested_header.slot,
       updateJSON.attested_header.body_root,
@@ -127,16 +166,37 @@ export abstract class BaseClient {
       `${this.beaconChainAPIURL}/eth/v2/beacon/blocks/${slot}`,
     );
     const blockJSON = res.data.data.message.body;
+    const eth1_data  = await blockJSON.eth1_data;
+    const graffiti  = await blockJSON.graffiti;
+    const fee_recipient  = await blockJSON.execution_payload.fee_recipient;
+    const transactions  = await blockJSON.execution_payload.transactions;
+    const attestations  = await blockJSON.attestations;
+    const gasUsed  = await blockJSON.execution_payload.gas_used;
+    console.log('| 🕒 timestamp', blockJSON.execution_payload.timestamp)
+    console.log('| 📃 block_hash', eth1_data.block_hash)
+    console.log('| 🎨 Graffiti', graffiti)
+    console.log('| ⛽️ gas_used', gasUsed)
+    console.log('| 🎫 Fee Recipient', fee_recipient)
+    console.log('| 🦷 state_root', blockJSON.execution_payload.state_root)
+    console.log('| 📥 deposit_root', eth1_data.deposit_root)
+    console.log('| 👥 deposit_count', eth1_data.deposit_count)
+    console.log('| sync_aggregate', blockJSON.sync_aggregate)
+    console.log('| attestations', attestations[0])
+    console.log('| 💳 Transactions', transactions[0],`
+|____________________________________________________
+    `)
     const block = bellatrix.ssz.BeaconBlockBody.fromJson(blockJSON);
     const blockRoot = toHexString(
       bellatrix.ssz.BeaconBlockBody.hashTreeRoot(block),
     );
     if (blockRoot !== expectedBlockRoot) {
+      // Note as to why this error should occur: 
+      // this light client does not validate the chain, 
+      // it relies on public beacon chain API endpoints
       throw Error(
         `block provided by the beacon chain api doesn't match the expected block root`,
       );
     }
-
     return {
       blockhash: blockJSON.execution_payload.block_hash,
       blockNumber: blockJSON.execution_payload.block_number,
@@ -226,9 +286,7 @@ export abstract class BaseClient {
     //   throw Error(`header.slot ${header.slot} is too far in the future, currentSlot: ${this.currentSlot}`);
     // }
 
-    const period = computeSyncPeriodAtSlot(header.slot);
     const headerBlockRoot = phase0.ssz.BeaconBlockHeader.hashTreeRoot(header);
-    const headerBlockRootHex = toHexString(headerBlockRoot);
     const committeeFast = this.deserializeSyncCommittee(committee);
     try {
       await assertValidSignedHeader(
@@ -245,7 +303,7 @@ export abstract class BaseClient {
     const participation =
       syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
     if (participation < BEACON_SYNC_SUPER_MAJORITY) {
-      return { correct: false, reason: 'insufficient signatures' };
+      return { correct: false, reason: 'insufficient signatures ⚠️' };
     }
     return { correct: true };
   }

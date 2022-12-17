@@ -172,7 +172,17 @@ export class OptimisticLightClient extends BaseClient {
     const currentPeriod = this.getCurrentPeriod();
     let startPeriod = this.genesisPeriod;
     console.log(
-      `Sync started using ${this.provers.length} Provers from period(${startPeriod}) to period(${currentPeriod})`,
+      `
+ ___________________________________________________
+/                                                  /
+|         OPTIMISTIC LIGHT CLIENT                 /
+| --------------------------------------------⬘⬘⬘-
+| Sync started using ${this.provers.length} Provers 
+| within a range: 
+| from period(${startPeriod}) 
+|  to period(${currentPeriod})
+|_________________________________________
+`
     );
 
     let lastCommitteeHash: Uint8Array = this.getCommitteeHash(

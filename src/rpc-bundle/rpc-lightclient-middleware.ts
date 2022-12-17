@@ -3,27 +3,28 @@ import { getJSONRPCServer } from '@lightclients/patronum';
 import { ClientManager } from './client-manager.js';
 import { ClientType } from '../constants.js';
 import {
-  defaultBeaconAPIURL,
-  defaultProvers,
-  defaultPublicRPC,
+  DEFAULT_BEACON_API_URL,
+  DEFAULT_PROVERS,
+  DEFAULT_PUBLIC_RPC_CHAIN_ID,
 } from './constants.js';
 import { EthereumRpcError, ethErrors } from 'eth-rpc-errors';
 
 // TODO: fix types
-export function getRPCLightClientMiddleware(network: number) {
-  const clientType = ClientType.optimistic;
-  const beaconAPIURL = defaultBeaconAPIURL[network];
-  const proverURLs = defaultProvers[clientType][network];
-  const [providerURL] = defaultPublicRPC[network];
+export function getMiddleware(network: number) {
+  const clientType: ClientType = ClientType.optimistic;
+  const beaconAPIURL: string = DEFAULT_BEACON_API_URL[network];
+  const proverURLs: string[] = DEFAULT_PROVERS[clientType][network];
+  const [providerURL]: string[] = DEFAULT_PUBLIC_RPC_CHAIN_ID[network];
 
-  const cm = new ClientManager(
+  const clientManager = new ClientManager(
     network,
     clientType,
     beaconAPIURL,
     providerURL,
     proverURLs,
   );
-  const syncPromise = cm.sync();
+
+  const syncPromise = clientManager.sync();
   let server: any = null;
 
   return createAsyncMiddleware(async (req: any, res: any, next: any) => {
@@ -35,7 +36,7 @@ export function getRPCLightClientMiddleware(network: number) {
     // TODO: fix error
     if (!_res)
       throw ethErrors.rpc.internal({
-        message: `something went wrong`,
+        message: `⛔️ Something went wrong`,
       });
     else if (_res.error)
       throw ethErrors.rpc.internal({

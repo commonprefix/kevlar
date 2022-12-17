@@ -13,7 +13,7 @@ const bootstrapDataMap: { [network: number]: any } = {
 export function getDefaultClientConfig(chain: number, n?: number) {
   const bootstrapData = bootstrapDataMap[chain];
   if (!bootstrapData)
-    throw new Error(`bootstrapData not found for chain ${chain}`);
+    throw new Error(`bootstrapData not found for chain ${chain}. Create a custom chain config in /bootstrap-data`);
   const networkName = chain === 1 ? 'mainnet' : 'goerli';
   const chainConfig = createIBeaconConfig(
     networksChainConfig[networkName],
