@@ -5,7 +5,7 @@ import * as phase0 from '@lodestar/types/phase0';
 import * as bellatrix from '@lodestar/types/bellatrix';
 import { digest } from '@chainsafe/as-sha256';
 import { IBeaconConfig } from '@lodestar/config';
-import type { PublicKey } from '@chainsafe/bls/types';
+import { PublicKey } from '@chainsafe/bls/types';
 import bls from '@chainsafe/bls/switchable';
 import { fromHexString, toHexString } from '@chainsafe/ssz';
 import {
@@ -219,6 +219,14 @@ export abstract class BaseClient {
     syncCommittee: Uint8Array[],
   ): SyncCommitteeFast {
     const pubkeys = this.deserializePubkeys(syncCommittee);
+    // const keys = []
+    // for (let i = 0; i < 4; i++) {
+    //   // console.log(digest(concatUint8Array([pubkeys[i]])));
+    //   console.log(`| 🔑 Deserializing committee pubkey #${i} ${toHexString([i])}`);
+    //   keys.push(i)
+    // }
+    // console.log(`| Displayed: ${keys.length} of ${pubkeys.length} SYNC COMMITTEE public keys`);
+    console.log(`| 🔑 ${pubkeys.length} SYNC COMMITTEE Public Keys`);
     return {
       pubkeys,
       aggregatePubkey: bls.PublicKey.aggregate(pubkeys),
@@ -264,6 +272,7 @@ export abstract class BaseClient {
         prevCommitteeFast,
         update,
       );
+      console.log('prevCommitteeFast', prevCommitteeFast)
       return true;
     } catch (e) {
       return false;
@@ -281,7 +290,7 @@ export abstract class BaseClient {
     const { attestedHeader: header, syncAggregate } = update;
 
     // TODO: fix this
-    // Prevent registering updates for slots to far ahead
+    // Prevent registering updates for slots too far ahead
     // if (header.slot > slotWithFutureTolerance(this.config, this.genesisTime, MAX_CLOCK_DISPARITY_SEC)) {
     //   throw Error(`header.slot ${header.slot} is too far in the future, currentSlot: ${this.currentSlot}`);
     // }
@@ -302,8 +311,9 @@ export abstract class BaseClient {
 
     const participation =
       syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
+      console.log(`| 🧬 ${participation}: SYNC COMMITTEE Participants`)
     if (participation < BEACON_SYNC_SUPER_MAJORITY) {
-      return { correct: false, reason: 'insufficient signatures ⚠️' };
+      return { correct: false, reason: 'insufficient number of signatures to verify' };
     }
     return { correct: true };
   }
