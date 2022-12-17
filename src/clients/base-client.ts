@@ -198,8 +198,12 @@ export abstract class BaseClient {
     } else {
       console.log(`| 🟢 ${atts.length} of ${attestations.length} SYNC COMMITTEE public keys`);
     }
-    console.log(`| 💳 First Transaction of Block ${transactions[0]}
-|____________________________________________________
+    console.log(`
+. | | | | | | | | | | | | | | | | | | | | | | | | | | |
+| 
+| 💳 First Transaction of Block
+| ${transactions[0]}
+.____________________________________________________
     `)
     const block = bellatrix.ssz.BeaconBlockBody.fromJson(blockJSON);
     const blockRoot = toHexString(
