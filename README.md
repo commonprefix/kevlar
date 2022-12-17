@@ -2,9 +2,7 @@
 
 [![Join the chat at https://discord.gg/ePV3prSPGW](https://img.shields.io/badge/chat-on%20discord-blue.svg)](https://discord.gg/ePV3prSPGW)
 
-```
-This repo serves to add a visual element to the actions being performed by the light client-based RPC Proxy, Kevlar
-```
+Kevlar but with changes to the terminal logs.
 
 ![KevlarVisualDemo1](./kevlar-visual-demo-1.png)
 
