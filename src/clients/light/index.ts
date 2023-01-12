@@ -34,7 +34,8 @@ export class LightClient extends BaseClient {
         );
         const validOrCommittee = await this.syncUpdateVerifyGetCommittee(
           startCommittee,
-          update,
+          period,
+          update
         );
 
         if (!(validOrCommittee as boolean)) {

@@ -103,6 +103,7 @@ export class SuperlightClient extends BaseClient {
       is1Correct = await this.syncUpdateVerify(
         prevCommittee,
         committee1,
+        period,
         update1,
       );
 
@@ -110,6 +111,7 @@ export class SuperlightClient extends BaseClient {
       is2Correct = await this.syncUpdateVerify(
         prevCommittee,
         committee2,
+        period,
         update2,
       );
     }

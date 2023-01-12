@@ -167,8 +167,15 @@ export abstract class BaseClient {
 
   protected async syncUpdateVerifyGetCommittee(
     prevCommittee: Uint8Array[],
+    period: number,
     update: LightClientUpdate,
   ): Promise<false | Uint8Array[]> {
+    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
+    if (period !== updatePeriod) {
+      console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
+      return false;
+    }
+
     const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
     try {
       // check if the update has valid signatures
@@ -187,8 +194,15 @@ export abstract class BaseClient {
   protected async syncUpdateVerify(
     prevCommittee: Uint8Array[],
     currentCommittee: Uint8Array[],
+    period: number,
     update: LightClientUpdate,
   ): Promise<boolean> {
+    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
+    if (period !== updatePeriod) {
+      console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
+      return false;
+    }
+
     // check if update.nextSyncCommittee is currentCommittee
     const isUpdateValid = isCommitteeSame(
       update.nextSyncCommittee.pubkeys,

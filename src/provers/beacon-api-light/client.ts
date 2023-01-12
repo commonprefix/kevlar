@@ -8,8 +8,7 @@ export class BeaconAPIProver implements IProver {
   cachedSyncUpdate: Map<number, LightClientUpdate> = new Map();
 
   constructor(
-    protected serverURL: string,
-    protected type: 'nimbus' | 'lodestar' = 'nimbus',
+    protected serverURL: string
   ) {}
 
   async _getSyncUpdates(
@@ -20,13 +19,7 @@ export class BeaconAPIProver implements IProver {
       `${this.serverURL}/eth/v1/beacon/light_client/updates?start_period=${startPeriod}&count=${maxCount}`,
       false,
     );
-    if (this.type === 'nimbus') {
-      return res.map((u: any) => altair.ssz.LightClientUpdate.fromJson(u.data));
-    } else if (this.type == 'lodestar') {
-      return res.data.map((u: any) => altair.ssz.LightClientUpdate.fromJson(u));
-    } else {
-      throw new Error('invalid consensus client type');
-    }
+    return res.map((u: any) => altair.ssz.LightClientUpdate.fromJson(u.data));
   }
 
   async getSyncUpdate(
