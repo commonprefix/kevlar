@@ -14,13 +14,13 @@ export function getApp(network: number, beaconAPIURL: string) {
   const client = new LightClient(config, beaconAPIURL, provers, store);
   client.sync().then(() => client.subscribe(() => {}));
 
-  app.get('/sync-committee/hashes', function (req, res) {
-    if (!client.isSynced)
-      return res.status(400).json({ error: 'Client not synced' });
-    const startPeriod = parseInt(req.query.startPeriod as string);
-    const maxCount = parseInt(req.query.maxCount as string);
-
+  app.get('/sync-committee/hashes', async (req, res) => {
     try {
+      if (!client.isSynced) {
+        return res.status(400).json({ error: 'Client not synced' });
+      }
+      const startPeriod = parseInt(req.query.startPeriod as string);
+      const maxCount = parseInt(req.query.maxCount as string);
       const hashes = store.getCommitteeHashes(startPeriod, maxCount);
       res.set('Content-Type', 'application/octet-stream');
       res.end(hashes);
@@ -30,32 +30,32 @@ export function getApp(network: number, beaconAPIURL: string) {
     }
   });
 
-  app.get('/sync-committee/:period', function (req, res) {
-    if (!client.isSynced)
-      return res.status(400).json({ error: 'Client not synced' });
-    const period =
-      req.params.period === 'latest'
-        ? client.latestPeriod
-        : parseInt(req.params.period);
+  app.get('/sync-committee/:period', async (req, res) => {
     try {
+      if (!client.isSynced) {
+        return res.status(400).json({ error: 'Client not synced' });
+      }
+      const period =
+        req.params.period === 'latest'
+          ? client.latestPeriod
+          : parseInt(req.params.period);
       const committee = store.getCommittee(period);
       res.set('Content-Type', 'application/octet-stream');
       res.end(committee);
     } catch (e) {
-      console.error(e);
       res.status(500).json({ error: e.message });
     }
   });
 
-  app.get('/sync-update/:period', function (req, res) {
-    if (!client.isSynced)
-      return res.status(400).json({ error: 'Client not synced' });
-    const period =
-      req.params.period === 'latest'
-        ? client.latestPeriod
-        : parseInt(req.params.period);
-
+  app.get('/sync-update/:period', async (req, res) => {
     try {
+      if (!client.isSynced) {
+        return res.status(400).json({ error: 'Client not synced' });
+      }
+      const period =
+        req.params.period === 'latest'
+          ? client.latestPeriod
+          : parseInt(req.params.period);
       const update = store.getUpdate(period);
       res.set('Content-Type', 'application/octet-stream');
       res.end(update);

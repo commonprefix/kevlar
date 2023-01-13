@@ -4,6 +4,7 @@ import { LightClientUpdate } from '../../types.js';
 import { LightClientUpdateSSZ, CommitteeSSZ, HashesSSZ } from '../../ssz.js';
 import { concatUint8Array } from '../../utils.js';
 
+
 export class MemoryStore implements IStore {
   store: {
     [period: number]: {
@@ -17,9 +18,7 @@ export class MemoryStore implements IStore {
     this.store[period] = {
       update: LightClientUpdateSSZ.serialize(update),
       nextCommittee: CommitteeSSZ.serialize(update.nextSyncCommittee.pubkeys),
-      nextCommitteeHash: digest(
-        concatUint8Array(update.nextSyncCommittee.pubkeys),
-      ),
+      nextCommitteeHash: digest(concatUint8Array(update.nextSyncCommittee.pubkeys)),
     };
   }
 
@@ -29,24 +28,19 @@ export class MemoryStore implements IStore {
   }
 
   getCommittee(period: number): Uint8Array {
-    if (period < 1)
-      throw new Error('committee not unavailable for period less than 1');
+    if (period < 1) throw new Error('committee not unavailable for period less than 1');
     const predPeriod = period - 1;
     if (predPeriod in this.store) return this.store[predPeriod].nextCommittee;
     throw new Error(`committee unavailable for period ${predPeriod}`);
   }
 
   getCommitteeHashes(period: number, count: number): Uint8Array {
-    if (period < 1)
-      throw new Error('committee not unavailable for period less than 1');
-    const predPeriod = period - 1;
-
+    if (period < 1) throw new Error('committee not unavailable for period less than 1');
     const hashes = new Array(count).fill(0).map((_, i) => {
-      const p = predPeriod + i;
-      if (p in this.store) return this.store[p].nextCommitteeHash;
-      throw new Error(`committee unavailable for period ${p}`);
+    const p = period + i;
+    if (p in this.store) return this.store[p].nextCommitteeHash;
+    throw new Error(`committee unavailable for period ${p}`);
     });
-
     return HashesSSZ.serialize(hashes);
   }
 }
