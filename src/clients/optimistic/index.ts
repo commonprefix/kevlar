@@ -42,6 +42,7 @@ export class OptimisticLightClient extends BaseClient {
     period: number,
     prevCommittee: Uint8Array[],
   ): Promise<boolean> {
+    
     try {
       const update = await this.provers[proverIndex].getSyncUpdate(period - 1);
       const validOrCommittee = await this.syncUpdateVerifyGetCommittee(
@@ -53,6 +54,7 @@ export class OptimisticLightClient extends BaseClient {
       const committeeHash = this.getCommitteeHash(
         validOrCommittee as Uint8Array[],
       );
+      
       return isUint8ArrayEq(committeeHash, expectedCommitteeHash);
     } catch (e) {
       console.error(

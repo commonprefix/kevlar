@@ -12,13 +12,14 @@ const bootstrapDataMap: { [network: number]: any } = {
 
 export function getDefaultClientConfig(chain: number, n?: number) {
   const bootstrapData = bootstrapDataMap[chain];
-  if (!bootstrapData)
-    throw new Error(`bootstrapData not found for chain ${chain}`);
+  if (!bootstrapData) throw new Error(`bootstrapData not found for chain ${chain}`);
   const networkName = chain === 1 ? 'mainnet' : 'goerli';
   const chainConfig = createIBeaconConfig(
     networksChainConfig[networkName],
     fromHexString(bootstrapData.genesis_validator_root),
   );
+
+  console.log(fromHexString(bootstrapData.genesis_validator_root))
   const clientConfig = {
     genesis: {
       committee: bootstrapData.committee_pk,

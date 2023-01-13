@@ -8,88 +8,42 @@ import { DEFAULT_BATCH_SIZE } from '../constants.js';
 export class LightClient extends BaseClient {
   batchSize: number;
 
-  constructor(
-    config: ClientConfig,
-    beaconChainAPIURL: string,
-    protected provers: IProver[],
-    protected store?: IStore,
-  ) {
+  constructor(config: ClientConfig, beaconChainAPIURL: string, protected provers: IProver[], protected store?: IStore) {
     super(config, beaconChainAPIURL);
     this.batchSize = config.n || DEFAULT_BATCH_SIZE;
   }
 
   // Returns the last valid sync committee
-  async syncProver(
-    prover: IProver,
-    startPeriod: number,
-    currentPeriod: number,
-    startCommittee: Uint8Array[],
-  ): Promise<{ syncCommittee: Uint8Array[]; period: number }> {
-    for (let period = startPeriod; period < currentPeriod; period += 1) {
-      try {
-        const update = await prover.getSyncUpdate(
-          period,
-          currentPeriod,
-          this.batchSize,
-        );
-        const validOrCommittee = await this.syncUpdateVerifyGetCommittee(
-          startCommittee,
-          period,
-          update
-        );
-
-        if (!(validOrCommittee as boolean)) {
-          console.log(`Found invalid update at period(${period})`);
-          return {
-            syncCommittee: startCommittee,
-            period,
-          };
-        }
-
-        if (this.store) await this.store.addUpdate(period, update);
-        startCommittee = validOrCommittee as Uint8Array[];
-      } catch (e) {
-        console.error(`failed to fetch sync update for period(${period})`);
-        return {
-          syncCommittee: startCommittee,
-          period,
-        };
-      }
+  async syncProver(prover: IProver, startPeriod: number, currentPeriod: number, startCommittee: Uint8Array[]): Promise<{ syncCommittee: Uint8Array[]; period: number }> {
+    for (let period = startPeriod; period < currentPeriod; period++) {
+    try {
+    const update = await prover.getSyncUpdate(period, currentPeriod, this.batchSize);
+    const validOrCommittee = await this.syncUpdateVerifyGetCommittee(startCommittee, period, update);
+    if (!validOrCommittee) {
+    console.log(`Found invalid update at period(${period})`);
+    return { syncCommittee: startCommittee, period };
     }
-    return {
-      syncCommittee: startCommittee,
-      period: currentPeriod,
-    };
+    if (this.store) await this.store.addUpdate(period, update);
+    startCommittee = validOrCommittee;
+    } catch (e) {
+    console.error(`Failed to fetch sync update for period(${period})`);
+    return { syncCommittee: startCommittee, period };
+    }
+    }
+    return { syncCommittee: startCommittee, period: currentPeriod };
   }
 
   // returns the prover info containing the current sync
   // committee and prover index of the first honest prover
   protected async syncFromGenesis(): Promise<ProverInfo[]> {
-    // get the tree size by currentPeriod - genesisPeriod
     const currentPeriod = this.getCurrentPeriod();
     let startPeriod = this.genesisPeriod;
     let startCommittee = this.genesisCommittee;
-    console.log(
-      `Sync started using ${this.provers.length} Provers from period(${startPeriod}) to period(${currentPeriod})`,
-    );
+    console.log(`Sync started from period ${startPeriod} to ${currentPeriod} using ${this.provers.length} Provers`);
 
     for (let i = 0; i < this.provers.length; i++) {
-      const prover = this.provers[i];
-      console.log(`Validating Prover(${i})`);
-      const { syncCommittee, period } = await this.syncProver(
-        prover,
-        startPeriod,
-        currentPeriod,
-        startCommittee,
-      );
-      if (period === currentPeriod) {
-        return [
-          {
-            index: i,
-            syncCommittee,
-          },
-        ];
-      }
+      const { syncCommittee, period } = await this.syncProver(this.provers[i], startPeriod, currentPeriod, startCommittee);
+      if (period === currentPeriod) return [{ index: i, syncCommittee }];
       startPeriod = period;
       startCommittee = syncCommittee;
     }

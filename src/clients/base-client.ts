@@ -18,7 +18,7 @@ import {
 } from '@lodestar/light-client/validation';
 import { SyncCommitteeFast } from '@lodestar/light-client/types';
 import { BEACON_SYNC_SUPER_MAJORITY, POLLING_DELAY } from './constants.js';
-import { isCommitteeSame, concatUint8Array } from '../utils.js';
+import { isCommitteeSame, concatUint8Array, smallHexStr } from '../utils.js';
 import {
   ClientConfig,
   ProverInfo,
@@ -26,6 +26,7 @@ import {
   VerifyWithReason,
 } from './types.js';
 import { Bytes32, OptimisticUpdate, LightClientUpdate } from '../types.js';
+import { Console } from 'console';
 
 export abstract class BaseClient {
   genesisCommittee: Uint8Array[];
@@ -48,18 +49,17 @@ export abstract class BaseClient {
 
   protected abstract syncFromGenesis(): Promise<ProverInfo[]>;
 
-  public async sync() {
-    // TODO: this always sync's from Genesis but you can sync
-    // from the last verified sync committee
+  public async sync(): Promise<void> {
     const currentPeriod = this.getCurrentPeriod();
-    if (currentPeriod > this.latestPeriod) {
-      const proverInfos = await this.syncFromGenesis();
-      // TODO: currently we simply take the first honest prover,
-      // but the client might need other provers if the first one
-      // doesn't respond
-      this.latestCommittee = proverInfos[0].syncCommittee;
-      this.latestPeriod = currentPeriod;
-    }
+    if (currentPeriod <= this.latestPeriod) {return }
+    const proverInfos = await this.syncFromGenesis();
+    const proverInfosAsHex = proverInfos[0].syncCommittee.map(pk => smallHexStr(pk))
+    console.log('PROVERS:', proverInfosAsHex)
+
+    if (proverInfos.length === 0) throw new Error("Failed to retrieve proverInfos");
+    this.latestCommittee = proverInfos[0].syncCommittee;
+    this.latestPeriod = currentPeriod;
+    // console.log('proverInfos[0].syncCommittee',proverInfos[0].syncCommittee)
   }
 
   public async getNextValidExecutionInfo(
@@ -80,10 +80,14 @@ export abstract class BaseClient {
     return this.latestPeriod === this.getCurrentPeriod();
   }
 
+  // FIRST THE ENGINE SUBSCRIBES TO THE EXECUTION
   public async subscribe(callback: (ei: ExecutionInfo) => AsyncOrSync<void>) {
+    // NEXT THE ENGINE TRIES TO SINK
+    // AFTER 12 SECONDS IT REPEATS AFTER OTHER LOGIC
     setInterval(async () => {
       try {
         await this.sync();
+        console.log('⏳ Optimistic Update - Verifying execution...')
         const ei = await this.getLatestExecution();
         if (ei && ei.blockhash !== this.latestBlockHash) {
           this.latestBlockHash = ei.blockhash;
@@ -96,46 +100,22 @@ export abstract class BaseClient {
   }
 
   protected async getLatestExecution(): Promise<ExecutionInfo | null> {
-    const res = await axios.get(
-      `${this.beaconChainAPIURL}/eth/v1/beacon/light_client/optimistic_update`,
-    );
-    const updateJSON = res.data.data;
-    const update = this.optimisticUpdateFromJSON(updateJSON);
-    const verify = await this.optimisticUpdateVerify(
-      this.latestCommittee,
-      update,
-    );
-    // TODO: check the update agains the latest sync commttee
-    if (!verify.correct) {
-      console.error(`Invalid Optimistic Update: ${verify.reason}`);
-      return null;
-    }
-    console.log(
-      `Optimistic update verified for slot ${updateJSON.attested_header.slot}`,
-    );
-    return this.getExecutionFromBlockRoot(
-      updateJSON.attested_header.slot,
-      updateJSON.attested_header.body_root,
-    );
+    const { data } = await axios.get(`${this.beaconChainAPIURL}/eth/v1/beacon/light_client/optimistic_update`);
+    const opUp = this.optimisticUpdateFromJSON(data.data);
+    const verify = await this.optimisticUpdateVerify(this.latestCommittee, opUp);
+    if (!verify.correct) throw new Error(`🚫 Invalid Optimistic Update: ${verify.reason}`);
+    console.log(`✅ Optimistic Update - Slot ${data.data.attested_header.slot}, Header ${data.data.attested_header.body_root} VERIFIED !\n`);
+    return this.getExecutionFromBlockRoot(data.data.attested_header.slot, data.data.attested_header.body_root);
   }
-
+// 
   protected async getExecutionFromBlockRoot(
     slot: bigint,
     expectedBlockRoot: Bytes32,
   ): Promise<ExecutionInfo> {
-    const res = await axios.get(
-      `${this.beaconChainAPIURL}/eth/v2/beacon/blocks/${slot}`,
-    );
-    const blockJSON = res.data.data.message.body;
+    const { data: { data: { message: { body: blockJSON } } } } = await axios.get(`${this.beaconChainAPIURL}/eth/v2/beacon/blocks/${slot}`);
     const block = bellatrix.ssz.BeaconBlockBody.fromJson(blockJSON);
-    const blockRoot = toHexString(
-      bellatrix.ssz.BeaconBlockBody.hashTreeRoot(block),
-    );
-    if (blockRoot !== expectedBlockRoot) {
-      throw Error(
-        `block provided by the beacon chain api doesn't match the expected block root`,
-      );
-    }
+    const blockRoot = toHexString(bellatrix.ssz.BeaconBlockBody.hashTreeRoot(block));
+    if (blockRoot !== expectedBlockRoot) throw Error(`block provided by the beacon chain api doesn't match the expected block root`);
 
     return {
       blockhash: blockJSON.execution_payload.block_hash,
@@ -172,7 +152,9 @@ export abstract class BaseClient {
   ): Promise<false | Uint8Array[]> {
     const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
     if (period !== updatePeriod) {
-      console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
+      console.error(
+        `Expected update with period ${period}, but recieved ${updatePeriod}`,
+      );
       return false;
     }
 
@@ -199,7 +181,9 @@ export abstract class BaseClient {
   ): Promise<boolean> {
     const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
     if (period !== updatePeriod) {
-      console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
+      console.error(
+        `Expected update with period ${period}, but recieved ${updatePeriod}`,
+      );
       return false;
     }
 
@@ -228,16 +212,35 @@ export abstract class BaseClient {
     return altair.ssz.LightClientOptimisticUpdate.fromJson(update);
   }
 
+  // computeSlotNumber(timestamp: any, config: any) {
+  //   const slotDuration = config.slotDuration * 1000; // convert to seconds
+  //   const genesisTime = config.genesisTime * 1000; // convert to seconds
+  //   return Math.floor((timestamp * 1000 - genesisTime) / slotDuration);
+  // }
+
+  // slotWithFutureTolerance(config:any, genesisTime:any, MAX_CLOCK_DISPARITY_SEC:any) {
+  //   const currentTime = Date.now() / 1000; // convert to seconds
+  //   console.log(currentTime)
+  //   const currentSlot = this.computeSlotNumber(currentTime, config);
+  //   console.log(currentSlot)
+  //   const maxDisparitySlot = this.computeSlotNumber(currentTime + MAX_CLOCK_DISPARITY_SEC, config);
+  //   console.log(maxDisparitySlot)
+  //   console.log(currentSlot + maxDisparitySlot)
+  //   return currentSlot + maxDisparitySlot;
+  // }
+
+
   async optimisticUpdateVerify(
     committee: Uint8Array[],
     update: OptimisticUpdate,
   ): Promise<VerifyWithReason> {
     const { attestedHeader: header, syncAggregate } = update;
 
-    // TODO: fix this
-    // Prevent registering updates for slots to far ahead
-    // if (header.slot > slotWithFutureTolerance(this.config, this.genesisTime, MAX_CLOCK_DISPARITY_SEC)) {
-    //   throw Error(`header.slot ${header.slot} is too far in the future, currentSlot: ${this.currentSlot}`);
+    // // can change this value
+    // const MAX_CLOCK_DISPARITY_SEC = 1
+    // // Prevent registering updates for slots to far ahead
+    // if (header.slot > this.slotWithFutureTolerance(this.chainConfig, this.genesisTime, MAX_CLOCK_DISPARITY_SEC)) {
+    //   throw Error(`header.slot ${header.slot} is too far in the future, currentSlot: ${this.slotWithFutureTolerance(this.chainConfig, this.genesisTime, MAX_CLOCK_DISPARITY_SEC)}`);
     // }
 
     const period = computeSyncPeriodAtSlot(header.slot);
@@ -263,6 +266,7 @@ export abstract class BaseClient {
     }
     return { correct: true };
   }
+
 
   getCurrentPeriod(): number {
     return computeSyncPeriodAtSlot(
