@@ -135,33 +135,23 @@ export abstract class BaseClient {
   // @chainsafe/lodestar-light-client/lib/utils/utils
   // this was required as the light client doesn't have access
   // to aggregated signatures
-  protected async syncUpdateVerifyGetCommittee(
-    prevCommittee: Uint8Array[],
-    period: number,
-    update: LightClientUpdate,
-    ): Promise<false | Uint8Array[]> {
+  protected async syncUpdateVerifyGetCommittee(prevCommittee: Uint8Array[], period: number, update: LightClientUpdate): Promise<false | Uint8Array[]> {
     try {
-    // check if the update has valid signatures
-    const prevCommitteeFast = {
-    pubkeys: this.deserializePubkeys(prevCommittee),
-    aggregatePubkey: bls.PublicKey.aggregate(this.deserializePubkeys(prevCommittee))
-    };
-    await assertValidLightClientUpdate(
-    this.chainConfig,
-    prevCommitteeFast,
-    update,
-    );
+      // check if the update has valid signatures
+      const prevCommitteeFast = {
+        pubkeys: this.deserializePubkeys(prevCommittee),
+        aggregatePubkey: bls.PublicKey.aggregate(this.deserializePubkeys(prevCommittee))
+      };
+      await assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
+      const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
+      if (period !== updatePeriod) {
+        throw new Error(`Expected update with period ${period}, but received ${updatePeriod}`);
+      }
+      return update.nextSyncCommittee.pubkeys;
     } catch (e) {
-    console.error(e);
-    return false;
+      console.error(e);
+      return false;
     }
-    
-    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
-  if (period !== updatePeriod) {
-    console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
-    return false;
-  }
-  return update.nextSyncCommittee.pubkeys;
   }
 
   protected async syncUpdateVerify(prevCommittee: Uint8Array[], currentCommittee: Uint8Array[], period: number, update: LightClientUpdate): Promise<boolean> {
