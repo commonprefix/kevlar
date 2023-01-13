@@ -21,52 +21,42 @@ export class OptimisticLightClient extends BaseClient {
     this.batchSize = config.n || DEFAULT_BATCH_SIZE;
   }
 
-  async getCommittee(period: number, proverIndex: number, expectedCommitteeHash: Uint8Array | null): Promise<Uint8Array[]> {
+  async getCommittee(
+    period: number,
+    proverIndex: number,
+    expectedCommitteeHash: Uint8Array | null,
+  ): Promise<Uint8Array[]> {
     if (period === this.genesisPeriod) return this.genesisCommittee;
     if (!expectedCommitteeHash) throw new Error('expectedCommitteeHash required');
-    const committee = await this.provers[proverIndex].getCommittee(period);
-    if (!isUint8ArrayEq(this.getCommitteeHash(committee), expectedCommitteeHash)) throw new Error('prover responded with an incorrect committee');
-    return committee;
+    return await this.provers[proverIndex].getCommittee(period);
   }
 
   async checkCommitteeHashAt(proverIndex: number, expectedCommitteeHash: Uint8Array, period: number, prevCommittee: Uint8Array[]): Promise<boolean> {
-    try {
-      const update = await this.provers[proverIndex].getSyncUpdate(period - 1);
-      const validOrCommittee = await this.syncUpdateVerifyGetCommittee(prevCommittee, period, update);
-      return validOrCommittee && isUint8ArrayEq(this.getCommitteeHash(validOrCommittee), expectedCommitteeHash);
-    } catch (e) {
-      return false;
-    }
+    const update = await this.provers[proverIndex].getSyncUpdate(period - 1);
+    const validOrCommittee = await this.syncUpdateVerifyGetCommittee(prevCommittee, period, update);
+    return validOrCommittee && isUint8ArrayEq(this.getCommitteeHash(validOrCommittee), expectedCommitteeHash);
   }
 
-  async fight(prover1: ProverInfoL, prover2: ProverInfoL, period: number, prevCommitteeHash: Uint8Array): Promise<boolean> {
+  async fight(prover1: ProverInfoL, prover2: ProverInfoL, period: number, prevCommitteeHash: Uint8Array): Promise<[boolean, boolean]> {
     let prevCommittee = period === this.genesisPeriod ? this.genesisCommittee : await this.getCommittee(period - 1, prover1.index, prevCommitteeHash)
-    try {
-      prevCommittee = prevCommittee || await this.getCommittee(period - 1, prover2.index, prevCommitteeHash)
-    } catch (e) {
-      console.error(`failed to fetch committee from provers for period(${period - 1})`, e)
-      throw new Error(`failed to fetch committee from all provers for period(${period - 1})`)
-    }
-    const isProver1Correct = await this.checkCommitteeHashAt(prover1.index, prover1.syncCommitteeHash, period, prevCommittee);
-    if (isProver1Correct) return true
-    const isProver2Correct = await this.checkCommitteeHashAt(prover2.index, prover2.syncCommitteeHash, period, prevCommittee);
-    if (isProver2Correct) return false;
-    throw new Error('both updates can not be correct at the same time');
+    prevCommittee = prevCommittee || await this.getCommittee(period - 1, prover2.index, prevCommitteeHash)
+    return [await this.checkCommitteeHashAt(prover1.index, prover1.syncCommitteeHash, period, prevCommittee),
+    await this.checkCommitteeHashAt(prover2.index, prover2.syncCommitteeHash, period, prevCommittee)];
   }
 
   async tournament(proverInfos: ProverInfoL[], period: number, lastCommitteeHash: Uint8Array) {
     let winners = [proverInfos[0]];
     for (let i = 1; i < proverInfos.length; i++) {
-        const currProver = proverInfos[i];
-        if (isUint8ArrayEq(winners[0].syncCommitteeHash, currProver.syncCommitteeHash)) {
-            winners.push(currProver);
-        } else {
-            const areCurrentWinnersHonest = await this.fight(winners[0], currProver, period, lastCommitteeHash);
-            if (!areCurrentWinnersHonest) winners = [currProver];
-        }
+      const currProver = proverInfos[i];
+      if (isUint8ArrayEq(winners[0].syncCommitteeHash, currProver.syncCommitteeHash)) {
+        winners.push(currProver);
+      } else {
+        const areCurrentWinnersHonest = await this.fight(winners[0], currProver, period, lastCommitteeHash);
+        if (!areCurrentWinnersHonest) winners = [currProver];
+      }
     }
     return winners;
-  }
+  }  
 
   // returns the prover info containing the current sync
   // committee and prover index of the first honest prover
