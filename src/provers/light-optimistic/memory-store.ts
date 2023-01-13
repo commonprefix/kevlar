@@ -4,42 +4,41 @@ import { LightClientUpdate } from '../../types.js';
 import { LightClientUpdateSSZ, CommitteeSSZ, HashesSSZ } from '../../ssz.js';
 import { concatUint8Array } from '../../utils.js';
 
-
 export class MemoryStore implements IStore {
-  store: {
-    [period: number]: {
-      update: Uint8Array;
-      nextCommittee: Uint8Array;
-      nextCommitteeHash: Uint8Array;
-    };
-  } = {};
+  store = new Map<number, {
+    update: Uint8Array;
+    nextCommittee: Uint8Array;
+    nextCommitteeHash: Uint8Array;
+  }>();
+  latestPeriod: number = 0;
 
   addUpdate(period: number, update: LightClientUpdate) {
-    this.store[period] = {
+    this.latestPeriod = period;
+    this.store.set(period, {
       update: LightClientUpdateSSZ.serialize(update),
       nextCommittee: CommitteeSSZ.serialize(update.nextSyncCommittee.pubkeys),
       nextCommitteeHash: digest(concatUint8Array(update.nextSyncCommittee.pubkeys)),
-    };
+    });
   }
 
   getUpdate(period: number): Uint8Array {
-    if (period in this.store) return this.store[period].update;
-    throw new Error(`update unavailable for period ${period}`);
+    const data = this.store.get(period);
+    if (!data) throw new Error(`update unavailable for period ${period}`);
+    return data.update;
   }
 
   getCommittee(period: number): Uint8Array {
     if (period < 1) throw new Error('committee not unavailable for period less than 1');
-    const predPeriod = period - 1;
-    if (predPeriod in this.store) return this.store[predPeriod].nextCommittee;
-    throw new Error(`committee unavailable for period ${predPeriod}`);
+    if (period > this.latestPeriod) throw new Error(`committee unavailable for period ${period}`);
+    return this.store.get(period - 1)!.nextCommittee;
   }
 
   getCommitteeHashes(period: number, count: number): Uint8Array {
     if (period < 1) throw new Error('committee not unavailable for period less than 1');
     const hashes = new Array(count).fill(0).map((_, i) => {
-    const p = period + i;
-    if (p in this.store) return this.store[p].nextCommitteeHash;
-    throw new Error(`committee unavailable for period ${p}`);
+      const p = period + i;
+      if (p > this.latestPeriod) throw new Error(`committee unavailable for period ${p}`);
+      return this.store.get(p)!.nextCommitteeHash;
     });
     return HashesSSZ.serialize(hashes);
   }
