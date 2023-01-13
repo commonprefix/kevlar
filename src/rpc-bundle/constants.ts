@@ -3,7 +3,7 @@ import { ClientType } from '../constants.js';
 export const defaultBeaconAPIURL: { [network: number]: string } = {
   // 1: 'https://lodestar-mainnet.chainsafe.io',
   // 1: 'http://testing.mainnet.beacon-api.nimbus.team',
-  1: 'http://nimbus-mainnet.commonprefix.com',
+  1: 'http://testing.mainnet.beacon-api.nimbus.team',
   // 5: 'https://lodestar-goerli.chainsafe.io',
   5: 'http://testing.prater.beacon-api.nimbus.team',
 };
