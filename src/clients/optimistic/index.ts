@@ -94,116 +94,53 @@ export class OptimisticLightClient extends BaseClient {
 
   // returns the prover info containing the current sync
   // committee and prover index of the first honest prover
-  protected async syncFromGenesis(): Promise<ProverInfo[]> {
-    // get the tree size by currentPeriod - genesisPeriod
+  async syncFromGenesis(): Promise<ProverInfo[]> {
     const currentPeriod = this.getCurrentPeriod();
-    let startPeriod = this.genesisPeriod;
-    console.log(
-      `Sync started using ${this.provers.length} Provers from period(${startPeriod}) to period(${currentPeriod})`,
-    );
-
-    let lastCommitteeHash: Uint8Array = this.getCommitteeHash(
-      this.genesisCommittee,
-    );
-    let proverInfos: ProverInfoL[] = this.provers.map((_, i) => ({
-      index: i,
-      syncCommitteeHash: new Uint8Array(),
-    }));
-
-    for (let period = startPeriod + 1; period <= currentPeriod; period++) {
-      const committeeHashes: (Uint8Array | null)[] = await Promise.all(
-        proverInfos.map(async pi => {
+    let lastCommitteeHash: Uint8Array = this.getCommitteeHash(this.genesisCommittee);
+    let proverInfos: ProverInfoL[] = this.provers.map((_, i) => ({index: i, syncCommitteeHash: new Uint8Array()}));
+    for (let period = this.genesisPeriod + 1; period <= currentPeriod; period++) {
+      const committeeHashes: (Uint8Array | null)[] = await Promise.all(proverInfos.map(async pi => {
           try {
-            return await this.provers[pi.index].getCommitteeHash(
-              period,
-              currentPeriod,
-              this.batchSize,
-            );
+            return await this.provers[pi.index].getCommitteeHash(period, currentPeriod, this.batchSize);
           } catch (e) {
-            console.error(
-              `failed to fetch committee hash for prover(${pi.index}) at period(${period})`,
-              e,
-            );
             return null;
           }
-        }),
-      );
-
+        }));
       const nonNullIndex = committeeHashes.findIndex(v => v !== null);
       if (nonNullIndex === -1) {
         proverInfos = [];
         break;
       }
-
       let foundConflict = false;
       for (let j = nonNullIndex + 1; j < committeeHashes.length; j++) {
-        if (
-          committeeHashes[j] !== null &&
-          !isUint8ArrayEq(committeeHashes[j]!, committeeHashes[nonNullIndex]!)
-        ) {
+        if (committeeHashes[j] !== null && !isUint8ArrayEq(committeeHashes[j]!, committeeHashes[nonNullIndex]!)) {
           foundConflict = true;
           break;
         }
       }
-
-      proverInfos = proverInfos.reduce(
-        (acc: ProverInfoL[], pi: ProverInfoL, i: number) => {
-          if (committeeHashes[i] !== null) {
-            acc.push({
-              ...pi,
-              syncCommitteeHash: committeeHashes[i]!,
-            });
-          }
-          return acc;
-        },
-        [],
-      );
-
-      if (foundConflict) {
-        proverInfos = await this.tournament(
-          proverInfos,
-          period,
-          lastCommitteeHash,
-        );
-      }
-
-      if (proverInfos.length === 0) {
-        throw new Error('none of the provers responded honestly :(');
-      } else if (proverInfos.length === 1) {
-        try {
-          lastCommitteeHash = await this.provers[
-            proverInfos[0].index
-          ].getCommitteeHash(currentPeriod, currentPeriod, this.batchSize);
-          break;
-        } catch (e) {
-          throw new Error(
-            `none of the provers responded honestly :( : ${e.message}`,
-          );
+    proverInfos = proverInfos.reduce((acc: ProverInfoL[], pi: ProverInfoL, i: number) => {
+        if (committeeHashes[i] !== null) {
+          acc.push({...pi, syncCommitteeHash: committeeHashes[i]!});
         }
-      } else {
-        lastCommitteeHash = proverInfos[0].syncCommitteeHash;
-      }
-    }
-
-    for (const p of proverInfos) {
+        return acc;
+      }, []);
+      if (foundConflict) proverInfos = await this.tournament(proverInfos, period, lastCommitteeHash);
+      if (proverInfos.length === 0) throw new Error('none of the provers responded honestly :(');
+      else if (proverInfos.length === 1) {
       try {
-        const committee = await this.getCommittee(
-          currentPeriod,
-          p.index,
-          lastCommitteeHash,
-        );
-        return [
-          {
-            index: p.index,
-            syncCommittee: committee,
-          },
-        ];
+      lastCommitteeHash = await this.provers[proverInfos[0].index].getCommitteeHash(currentPeriod, currentPeriod, this.batchSize);
+      break;
       } catch (e) {
-        console.error(
-          `seemingly honest prover(${p.index}) responded incorrectly!`,
-        );
+      throw new Error(`none of the provers responded honestly :( : ${e.message}`);
       }
+      } else lastCommitteeHash = proverInfos[0].syncCommitteeHash;
+      }
+      for (const p of proverInfos) {
+        try {
+        const committee = await this.getCommittee(currentPeriod, p.index, lastCommitteeHash);
+        return [{index: p.index, syncCommittee: committee}];
+        } catch (e) {}
+      }
+      throw new Error('none of the provers responded honestly :(');
     }
-    throw new Error('none of the provers responded honestly :(');
-  }
 }
