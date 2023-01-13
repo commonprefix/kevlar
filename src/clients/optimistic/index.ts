@@ -63,106 +63,31 @@ export class OptimisticLightClient extends BaseClient {
     }
   }
 
-  async fight(
-    proverInfo1: ProverInfoL,
-    proverInfo2: ProverInfoL,
-    period: number,
-    prevCommitteeHash: Uint8Array,
-  ): Promise<boolean> {
-    let prevCommittee: Uint8Array[] = [];
-    if (period === this.genesisPeriod) {
-      prevCommittee = this.genesisCommittee;
-    } else {
-      let exception;
-      for (const p of [proverInfo1, proverInfo2]) {
-        try {
-          prevCommittee = await this.getCommittee(
-            period - 1,
-            p.index,
-            prevCommitteeHash,
-          );
-          break;
-        } catch (e) {
-          exception = e;
-          console.error(
-            `failed to fetch committee from ${p.index} for period(${
-              period - 1
-            })`,
-            e,
-          );
-        }
-      }
-      if (!prevCommittee) {
-        throw new Error(
-          `failed to fetch committee from all provers for period(${
-            period - 1
-          })`
-        );
-      }
+  async fight(prover1: ProverInfoL, prover2: ProverInfoL, period: number, prevCommitteeHash: Uint8Array): Promise<boolean> {
+    let prevCommittee = period === this.genesisPeriod ? this.genesisCommittee : await this.getCommittee(period - 1, prover1.index, prevCommitteeHash)
+    try {
+      prevCommittee = prevCommittee || await this.getCommittee(period - 1, prover2.index, prevCommitteeHash)
+    } catch (e) {
+      console.error(`failed to fetch committee from provers for period(${period - 1})`, e)
+      throw new Error(`failed to fetch committee from all provers for period(${period - 1})`)
     }
-  
-    const is1Correct = await this.checkCommitteeHashAt(
-      proverInfo1.index,
-      proverInfo1.syncCommitteeHash,
-      period,
-      prevCommittee,
-    );
-    if (is1Correct) return true;
-  
-    const is2Correct = await this.checkCommitteeHashAt(
-      proverInfo2.index,
-      proverInfo2.syncCommitteeHash,
-      period,
-      prevCommittee,
-    );
-    if (is2Correct) return false;
-  
-    throw new Error(
-      'both updates can not be correct at the same time'
-    );
+    const isProver1Correct = await this.checkCommitteeHashAt(prover1.index, prover1.syncCommitteeHash, period, prevCommittee);
+    if (isProver1Correct) return true
+    const isProver2Correct = await this.checkCommitteeHashAt(prover2.index, prover2.syncCommitteeHash, period, prevCommittee);
+    if (isProver2Correct) return false;
+    throw new Error('both updates can not be correct at the same time');
   }
-  
 
-  async tournament(
-    proverInfos: ProverInfoL[],
-    period: number,
-    lastCommitteeHash: Uint8Array,
-  ) {
+  async tournament(proverInfos: ProverInfoL[], period: number, lastCommitteeHash: Uint8Array) {
     let winners = [proverInfos[0]];
     for (let i = 1; i < proverInfos.length; i++) {
-      // Consider one of the winner for thi current round
-      const currWinner = winners[0];
-      const currProver = proverInfos[i];
-      if (
-        isUint8ArrayEq(
-          currWinner.syncCommitteeHash,
-          currProver.syncCommitteeHash,
-        )
-      ) {
-        // if the prover has the same syncCommitteeHash as the current
-        // winners simply add it to list of winners
-        console.log(
-          `Prover(${currProver.index}) added to the existing winners list`,
-        );
-        winners.push(currProver);
-      } else {
-        console.log(
-          `Fight between Prover(${currWinner.index}) and Prover(${currProver.index})`,
-        );
-        const areCurrentWinnersHonest = await this.fight(
-          currWinner,
-          currProver,
-          period,
-          lastCommitteeHash,
-        );
-        // If the winner lost discard all the existing winners
-        if (!areCurrentWinnersHonest) {
-          console.log(
-            `Prover(${currProver.index}) defeated all existing winners`,
-          );
-          winners = [currProver];
+        const currProver = proverInfos[i];
+        if (isUint8ArrayEq(winners[0].syncCommitteeHash, currProver.syncCommitteeHash)) {
+            winners.push(currProver);
+        } else {
+            const areCurrentWinnersHonest = await this.fight(winners[0], currProver, period, lastCommitteeHash);
+            if (!areCurrentWinnersHonest) winners = [currProver];
         }
-      }
     }
     return winners;
   }
