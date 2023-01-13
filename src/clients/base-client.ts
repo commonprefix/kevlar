@@ -267,21 +267,9 @@ export abstract class BaseClient {
     return { correct: true };
   }
 
-
   getCurrentPeriod(): number {
     return computeSyncPeriodAtSlot(
       getCurrentSlot(this.chainConfig, this.genesisTime),
     );
   }
-
-  // updatesFromBytes(
-  //   bytesUpdates: Uint8Array,
-  //   maxItems: number,
-  // ): LightClientUpdate[] {
-  //   // TODO: check the reason for type error
-  //   return new ListCompositeType(
-  //     altair.ssz.LightClientUpdate as any,
-  //     maxItems,
-  //   ).deserialize(bytesUpdates);
-  // }
 }
