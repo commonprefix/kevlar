@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+// This code is a script for starting a server that acts as a proxy for an Ethereum JSON-RPC API, 
+// using the startServer function from the @lightclients/patronum package. 
+// The script uses command line arguments passed in to the program to determine certain options, 
+// such as the network and client type to use.
+
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -79,3 +84,4 @@ async function main() {
 }
 
 main();
+
