@@ -1,4 +1,4 @@
-import { concatUint8Array, isUint8ArrayEq, smallHexStr } from '../../utils.js';
+import { isUint8ArrayEq } from '../../utils.js';
 import { BaseClient } from '../base-client.js';
 import { ClientConfig, ProverInfo } from '../types.js';
 import { IProver } from './iprover.js';
@@ -21,16 +21,11 @@ export class OptimisticLightClient extends BaseClient {
     this.batchSize = config.n || DEFAULT_BATCH_SIZE;
   }
 
-  async getCommittee(
-    period: number,
-    proverIndex: number,
-    expectedCommitteeHash: Uint8Array | null,
-  ): Promise<Uint8Array[]> {
+  async getCommittee(period: number, proverIndex: number, expectedCommitteeHash: Uint8Array | null): Promise<Uint8Array[]> {
     if (period === this.genesisPeriod) return this.genesisCommittee;
     if (!expectedCommitteeHash) throw new Error('expectedCommitteeHash required');
     const committee = await this.provers[proverIndex].getCommittee(period);
-    const committeeHash = this.getCommitteeHash(committee);
-    if (!isUint8ArrayEq(committeeHash, expectedCommitteeHash as Uint8Array)) throw new Error('prover responded with an incorrect committee');
+    if (!isUint8ArrayEq(this.getCommitteeHash(committee), expectedCommitteeHash)) throw new Error('prover responded with an incorrect committee');
     return committee;
   }
 
