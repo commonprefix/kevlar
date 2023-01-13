@@ -34,31 +34,12 @@ export class OptimisticLightClient extends BaseClient {
     return committee;
   }
 
-  async checkCommitteeHashAt(
-    proverIndex: number,
-    expectedCommitteeHash: Uint8Array,
-    period: number,
-    prevCommittee: Uint8Array[],
-  ): Promise<boolean> {
-    
+  async checkCommitteeHashAt(proverIndex: number, expectedCommitteeHash: Uint8Array, period: number, prevCommittee: Uint8Array[]): Promise<boolean> {
     try {
       const update = await this.provers[proverIndex].getSyncUpdate(period - 1);
-      const validOrCommittee = await this.syncUpdateVerifyGetCommittee(
-        prevCommittee,
-        period,
-        update,
-      );
-      if (!(validOrCommittee as boolean)) return false;
-      const committeeHash = this.getCommitteeHash(
-        validOrCommittee as Uint8Array[],
-      );
-      
-      return isUint8ArrayEq(committeeHash, expectedCommitteeHash);
+      const validOrCommittee = await this.syncUpdateVerifyGetCommittee(prevCommittee, period, update);
+      return validOrCommittee && isUint8ArrayEq(this.getCommitteeHash(validOrCommittee), expectedCommitteeHash);
     } catch (e) {
-      console.error(
-        `failed to check committee hash for prover(${proverIndex}) at period(${period})`,
-        e,
-      );
       return false;
     }
   }
