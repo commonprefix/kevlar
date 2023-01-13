@@ -135,119 +135,57 @@ export abstract class BaseClient {
   // @chainsafe/lodestar-light-client/lib/utils/utils
   // this was required as the light client doesn't have access
   // to aggregated signatures
-  private deserializeSyncCommittee(
-    syncCommittee: Uint8Array[],
-  ): SyncCommitteeFast {
-    const pubkeys = this.deserializePubkeys(syncCommittee);
-    return {
-      pubkeys,
-      aggregatePubkey: bls.PublicKey.aggregate(pubkeys),
-    };
-  }
-
   protected async syncUpdateVerifyGetCommittee(
     prevCommittee: Uint8Array[],
     period: number,
     update: LightClientUpdate,
-  ): Promise<false | Uint8Array[]> {
-    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
-    if (period !== updatePeriod) {
-      console.error(
-        `Expected update with period ${period}, but recieved ${updatePeriod}`,
-      );
-      return false;
-    }
-
-    const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
+    ): Promise<false | Uint8Array[]> {
     try {
-      // check if the update has valid signatures
-      await assertValidLightClientUpdate(
-        this.chainConfig,
-        prevCommitteeFast,
-        update,
-      );
-      return update.nextSyncCommittee.pubkeys;
+    // check if the update has valid signatures
+    const prevCommitteeFast = {
+    pubkeys: this.deserializePubkeys(prevCommittee),
+    aggregatePubkey: bls.PublicKey.aggregate(this.deserializePubkeys(prevCommittee))
+    };
+    await assertValidLightClientUpdate(
+    this.chainConfig,
+    prevCommitteeFast,
+    update,
+    );
     } catch (e) {
-      console.error(e);
-      return false;
+    console.error(e);
+    return false;
     }
+    
+    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
+  if (period !== updatePeriod) {
+    console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
+    return false;
+  }
+  return update.nextSyncCommittee.pubkeys;
   }
 
-  protected async syncUpdateVerify(
-    prevCommittee: Uint8Array[],
-    currentCommittee: Uint8Array[],
-    period: number,
-    update: LightClientUpdate,
-  ): Promise<boolean> {
-    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
-    if (period !== updatePeriod) {
-      console.error(
-        `Expected update with period ${period}, but recieved ${updatePeriod}`,
-      );
-      return false;
+  protected async syncUpdateVerify(prevCommittee: Uint8Array[], currentCommittee: Uint8Array[], period: number, update: LightClientUpdate): Promise<boolean> {
+    const nextCommittee = await this.syncUpdateVerifyGetCommittee(prevCommittee, period, update);
+    if (nextCommittee) {
+        return isCommitteeSame(nextCommittee, currentCommittee);
     }
-
-    // check if update.nextSyncCommittee is currentCommittee
-    const isUpdateValid = isCommitteeSame(
-      update.nextSyncCommittee.pubkeys,
-      currentCommittee,
-    );
-    if (!isUpdateValid) return false;
-
-    const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
-    try {
-      // check if the update has valid signatures
-      await assertValidLightClientUpdate(
-        this.chainConfig,
-        prevCommitteeFast,
-        update,
-      );
-      return true;
-    } catch (e) {
-      return false;
-    }
+    return false;
   }
 
   optimisticUpdateFromJSON(update: any): OptimisticUpdate {
     return altair.ssz.LightClientOptimisticUpdate.fromJson(update);
   }
 
-  // computeSlotNumber(timestamp: any, config: any) {
-  //   const slotDuration = config.slotDuration * 1000; // convert to seconds
-  //   const genesisTime = config.genesisTime * 1000; // convert to seconds
-  //   return Math.floor((timestamp * 1000 - genesisTime) / slotDuration);
-  // }
-
-  // slotWithFutureTolerance(config:any, genesisTime:any, MAX_CLOCK_DISPARITY_SEC:any) {
-  //   const currentTime = Date.now() / 1000; // convert to seconds
-  //   console.log(currentTime)
-  //   const currentSlot = this.computeSlotNumber(currentTime, config);
-  //   console.log(currentSlot)
-  //   const maxDisparitySlot = this.computeSlotNumber(currentTime + MAX_CLOCK_DISPARITY_SEC, config);
-  //   console.log(maxDisparitySlot)
-  //   console.log(currentSlot + maxDisparitySlot)
-  //   return currentSlot + maxDisparitySlot;
-  // }
-
-
   async optimisticUpdateVerify(
     committee: Uint8Array[],
     update: OptimisticUpdate,
   ): Promise<VerifyWithReason> {
     const { attestedHeader: header, syncAggregate } = update;
-
-    // // can change this value
-    // const MAX_CLOCK_DISPARITY_SEC = 1
-    // // Prevent registering updates for slots to far ahead
-    // if (header.slot > this.slotWithFutureTolerance(this.chainConfig, this.genesisTime, MAX_CLOCK_DISPARITY_SEC)) {
-    //   throw Error(`header.slot ${header.slot} is too far in the future, currentSlot: ${this.slotWithFutureTolerance(this.chainConfig, this.genesisTime, MAX_CLOCK_DISPARITY_SEC)}`);
-    // }
-
-    const period = computeSyncPeriodAtSlot(header.slot);
     const headerBlockRoot = phase0.ssz.BeaconBlockHeader.hashTreeRoot(header);
-    const headerBlockRootHex = toHexString(headerBlockRoot);
-    const committeeFast = this.deserializeSyncCommittee(committee);
     try {
+      const pubkeys = this.deserializePubkeys(committee);
+      const aggregatePubkey = bls.PublicKey.aggregate(pubkeys);
+      const committeeFast = { pubkeys, aggregatePubkey };
       await assertValidSignedHeader(
         this.chainConfig,
         committeeFast,
@@ -259,14 +197,13 @@ export abstract class BaseClient {
       return { correct: false, reason: 'invalid signatures' };
     }
 
-    const participation =
-      syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
+    const participation = syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
     if (participation < BEACON_SYNC_SUPER_MAJORITY) {
       return { correct: false, reason: 'insufficient signatures' };
     }
-    return { correct: true };
+      return { correct: true };
   }
-
+  
   getCurrentPeriod(): number {
     return computeSyncPeriodAtSlot(
       getCurrentSlot(this.chainConfig, this.genesisTime),
