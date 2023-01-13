@@ -19,14 +19,10 @@ export class LightClient extends BaseClient {
     try {
     const update = await prover.getSyncUpdate(period, currentPeriod, this.batchSize);
     const validOrCommittee = await this.syncUpdateVerifyGetCommittee(startCommittee, period, update);
-    if (!validOrCommittee) {
-    console.log(`Found invalid update at period(${period})`);
-    return { syncCommittee: startCommittee, period };
-    }
+    if (!validOrCommittee) return { syncCommittee: startCommittee, period };
     if (this.store) await this.store.addUpdate(period, update);
     startCommittee = validOrCommittee;
     } catch (e) {
-    console.error(`Failed to fetch sync update for period(${period})`);
     return { syncCommittee: startCommittee, period };
     }
     }
