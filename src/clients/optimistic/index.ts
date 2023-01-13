@@ -69,58 +69,59 @@ export class OptimisticLightClient extends BaseClient {
     period: number,
     prevCommitteeHash: Uint8Array,
   ): Promise<boolean> {
-    const getPrevCommittee = async () => {
-      if (period === this.genesisPeriod) {
-        return this.genesisCommittee;
-      } else {
-        for (const p of [proverInfo1, proverInfo2]) {
-          try {
-            return await this.getCommittee(
-              period - 1,
-              p.index,
-              prevCommitteeHash,
-            );
-          } catch (e) {
-            console.error(
-              `failed to fetch committee from ${p.index} for period(${
-                period - 1
-              })`,
-              e,
-            );
-          }
+    let prevCommittee: Uint8Array[] = [];
+    if (period === this.genesisPeriod) {
+      prevCommittee = this.genesisCommittee;
+    } else {
+      let exception;
+      for (const p of [proverInfo1, proverInfo2]) {
+        try {
+          prevCommittee = await this.getCommittee(
+            period - 1,
+            p.index,
+            prevCommitteeHash,
+          );
+          break;
+        } catch (e) {
+          exception = e;
+          console.error(
+            `failed to fetch committee from ${p.index} for period(${
+              period - 1
+            })`,
+            e,
+          );
         }
+      }
+      if (!prevCommittee) {
         throw new Error(
           `failed to fetch committee from all provers for period(${
             period - 1
-          })`,
+          })`
         );
       }
-    };
-
-    const prevCommittee = await getPrevCommittee();
-
+    }
+  
     const is1Correct = await this.checkCommitteeHashAt(
       proverInfo1.index,
       proverInfo1.syncCommitteeHash,
       period,
       prevCommittee,
     );
+    if (is1Correct) return true;
+  
     const is2Correct = await this.checkCommitteeHashAt(
       proverInfo2.index,
       proverInfo2.syncCommitteeHash,
       period,
       prevCommittee,
     );
-
-    if (is1Correct && !is2Correct) return true;
-    else if (is2Correct && !is1Correct) return false;
-    else if (!is2Correct && !is1Correct) {
-      // If both of them are correct we can return either
-      // true or false. The one honest prover will defeat
-      // this prover later
-      return false;
-    } else throw new Error('both updates can not be correct at the same time');
+    if (is2Correct) return false;
+  
+    throw new Error(
+      'both updates can not be correct at the same time'
+    );
   }
+  
 
   async tournament(
     proverInfos: ProverInfoL[],
