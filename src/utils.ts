@@ -29,9 +29,7 @@ export async function handleGETRequest(
       isBuffer ? { responseType: 'arraybuffer' } : undefined,
     );
     cache.set(url, data);
-    // console.log('cachedData 2',cachedData)
     console.log('CACHE',cache)
-    console.log('CACHE',cache.keys)
     return data;
   } catch (e) {
     console.error(`failed GET request (${url}): ${e.message}`);
@@ -81,7 +79,7 @@ export const numberToUint8Array = (num: number): Uint8Array => {
 }
 
 export const shuffle = (array: any[]) => {
-  for (let i = array.length - 1; i > 0; i--) {
+  for (let i = array.length - 1; i > 0; --i) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
