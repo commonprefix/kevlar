@@ -27,14 +27,7 @@ import {
 } from './types.js';
 import { Bytes32, OptimisticUpdate, LightClientUpdate } from '../types.js';
 import { Console } from 'console';
-// import { guessAbiEncodedData } from './decoder';
-// import {EthereumBlockDecoder} from './EthereumBlockDecoder';
-type UpdateInfo = {
-  ei: ExecutionInfo;
-  blockhash: string;
-  blockNumber: number | bigint;
-  blockData: unknown;
-}
+
 export abstract class BaseClient {
   genesisCommittee: Uint8Array[];
   genesisPeriod: number;
@@ -44,7 +37,6 @@ export abstract class BaseClient {
   latestCommittee: Uint8Array[];
   latestPeriod: number = -1;
   latestBlockHash: string;
-  // private ethereumBlockDecoder: EthereumBlockDecoder;
 
   constructor(config: ClientConfig, protected beaconChainAPIURL: string) {
     this.genesisCommittee = config.genesis.committee.map(pk =>
