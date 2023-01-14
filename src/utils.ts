@@ -5,7 +5,6 @@ import axios from 'axios';
 import LRU from 'lru-cache';
 
 const cache = new LRU({ max: 500 });
-// console.log('CACHE',cache)
 
 export async function handleGETRequest(
   url: string,
