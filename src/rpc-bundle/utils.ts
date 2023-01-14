@@ -19,7 +19,6 @@ export function getDefaultClientConfig(chain: number, n?: number) {
     fromHexString(bootstrapData.genesis_validator_root),
   );
 
-  console.log(fromHexString(bootstrapData.genesis_validator_root))
   const clientConfig = {
     genesis: {
       committee: bootstrapData.committee_pk,

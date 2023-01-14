@@ -77,7 +77,6 @@ async function main() {
     // 3. THIRD STEP IN LOOP, RECALL SYNC
     const provider = await cm.sync();
     await startServer(provider, port);
-    console.log(provider, `RPC-PROXY SERVER PORT: ${port}`)
   } catch (err) {
     console.error(err);
   }

@@ -61,13 +61,10 @@ export abstract class BaseClient {
     const currentPeriod = this.getCurrentPeriod();
     if (currentPeriod <= this.latestPeriod) {return }
     const proverInfos = await this.syncFromGenesis();
-    // const proverInfosAsHex = proverInfos[0].syncCommittee.map(pk => smallHexStr(pk))
-    // console.log('PROVERS:', proverInfosAsHex)
 
     if (proverInfos.length === 0) throw new Error("Failed to retrieve proverInfos");
     this.latestCommittee = proverInfos[0].syncCommittee;
     this.latestPeriod = currentPeriod;
-    // console.log('proverInfos[0].syncCommittee',proverInfos[0].syncCommittee)
   }
 
   public get isSynced() {
@@ -110,12 +107,8 @@ export abstract class BaseClient {
     expectedBlockRoot: Bytes32,
   ): Promise<ExecutionInfo> {
     const { data: { data: { message: { body: blockJSON } } } } = await axios.get(`${this.beaconChainAPIURL}/eth/v2/beacon/blocks/${slot}`);
-    // console.log(blockJSON)
     const x = blockJSON.execution_payload;
-    // console.log(x)
     const block = bellatrix.ssz.BeaconBlockBody.fromJson(blockJSON);
-    // const types = guessAbiEncodedData(blockJSON);
-    // console.log(block)
     const blockRoot = toHexString(bellatrix.ssz.BeaconBlockBody.hashTreeRoot(block));
     if (blockRoot !== expectedBlockRoot) throw Error(`block provided by the beacon chain api doesn't match the expected block root`);
 
@@ -131,8 +124,6 @@ export abstract class BaseClient {
     while (true) {
     const ei = await this.getLatestExecution();
     if (ei) return ei;
-    console.log('EXECUTION INFO',ei);
-
     if (delay > MAX_DELAY) throw new Error('no valid execution payload found');
     // delay for the next slot
     await new Promise(resolve => setTimeout(resolve, delay));
