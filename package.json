@@ -1,5 +1,5 @@
 {
-  "name": "@pryority/mykevlar",
+  "name": "@lightclients/kevlar",
   "version": "0.2.6",
   "description": "Light client-based RPC Proxy for PoS Ethereum",
   "main": "dist/index.js",
