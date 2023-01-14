@@ -9,12 +9,19 @@ import {
 } from './constants.js';
 import { EthereumRpcError, ethErrors } from 'eth-rpc-errors';
 
+// A middleware function for the JSON-RPC proxy server. 
+// It creates a new instance of the ClientManager class, 
+// synchronizes it with the network, and then creates a 
+// JSON-RPC server using the provider returned by the sync function.
+
 export function getRPCLightClientMiddleware(network: number) {
   const clientType = ClientType.optimistic;
   const beaconAPIURL = defaultBeaconAPIURL[network];
   const proverURLs = defaultProvers[clientType][network];
   const [providerURL] = defaultPublicRPC[network];
-  
+  if (!defaultBeaconAPIURL[network] || !defaultProvers[network] || !defaultPublicRPC[network]) {
+    throw new Error(`Invalid network value: ${network}`);
+  }
   const cm = new ClientManager(
   network,
   clientType,

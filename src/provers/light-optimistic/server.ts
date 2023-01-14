@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import * as http from 'http';
 import { MemoryStore } from './memory-store.js';
 import { LightClient } from '../../clients/light/index.js';
@@ -12,9 +12,15 @@ export function getApp(network: number, beaconAPIURL: string) {
   const store = new MemoryStore();
   const client = new LightClient(config, beaconAPIURL, provers, store);
   client.sync().then(() => client.subscribe(() => {}));
+  
+  function checkSync(client: LightClient, handler: (req: Request, res: Response, next: NextFunction) => void) {
+    return function (req: Request, res: Response, next: NextFunction) {
+      if (!client.isSynced) return res.status(400).json({ error: 'Client not synced' });
+      handler(req, res, next);
+    }
+  }
 
-  app.get('/sync-committee/hashes', function (req, res, next) {
-    if (!client.isSynced) return res.status(400).json({ error: 'Client not synced' });
+  app.use('/sync-committee/hashes', checkSync(client, (req, res, next) => {
     const startPeriod = parseInt(req.query.startPeriod as string);
     const maxCount = parseInt(req.query.maxCount as string);
 
@@ -25,10 +31,9 @@ export function getApp(network: number, beaconAPIURL: string) {
     } catch (err) {
         next(err);
     }
-  });
+  }));
 
-  app.get('/sync-committee/:period', function (req, res, next) {
-    if (!client.isSynced) return res.status(400).json({ error: 'Client not synced' });
+  app.use('/sync-committee/:period', checkSync(client, (req, res, next) => {
     const period = req.params.period === 'latest' ? client.latestPeriod : parseInt(req.params.period);
 
     try {
@@ -38,20 +43,19 @@ export function getApp(network: number, beaconAPIURL: string) {
     } catch (err) {
         next(err);
     }
-  });
+  }));
 
-  app.get('/sync-update/:period', function (req, res, next) {
-    if (!client.isSynced) return res.status(400).json({ error: 'Client not synced' });
-    const period = req.params.period === 'latest' ? client.latestPeriod : parseInt(req.params.period);
+  app.use('/sync-update/:period', checkSync(client, (req, res, next) => {
+      const period = req.params.period === 'latest' ? client.latestPeriod : parseInt(req.params.period);
 
-    try {
-        const update = store.getUpdate(period);
-        res.set('Content-Type', 'application/octet-stream');
-        res.end(update);
-    } catch (err) {
-        next(err);
-    }
-  });
+      try {
+          const update = store.getUpdate(period);
+          res.set('Content-Type', 'application/octet-stream');
+          res.end(update);
+      } catch (err) {
+          next(err);
+      }
+  }));
 
   return app;
 }

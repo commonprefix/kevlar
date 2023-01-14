@@ -27,7 +27,14 @@ import {
 } from './types.js';
 import { Bytes32, OptimisticUpdate, LightClientUpdate } from '../types.js';
 import { Console } from 'console';
-
+// import { guessAbiEncodedData } from './decoder';
+// import {EthereumBlockDecoder} from './EthereumBlockDecoder';
+type UpdateInfo = {
+  ei: ExecutionInfo;
+  blockhash: string;
+  blockNumber: number | bigint;
+  blockData: unknown;
+}
 export abstract class BaseClient {
   genesisCommittee: Uint8Array[];
   genesisPeriod: number;
@@ -37,6 +44,7 @@ export abstract class BaseClient {
   latestCommittee: Uint8Array[];
   latestPeriod: number = -1;
   latestBlockHash: string;
+  // private ethereumBlockDecoder: EthereumBlockDecoder;
 
   constructor(config: ClientConfig, protected beaconChainAPIURL: string) {
     this.genesisCommittee = config.genesis.committee.map(pk =>
@@ -53,27 +61,13 @@ export abstract class BaseClient {
     const currentPeriod = this.getCurrentPeriod();
     if (currentPeriod <= this.latestPeriod) {return }
     const proverInfos = await this.syncFromGenesis();
-    const proverInfosAsHex = proverInfos[0].syncCommittee.map(pk => smallHexStr(pk))
-    console.log('PROVERS:', proverInfosAsHex)
+    // const proverInfosAsHex = proverInfos[0].syncCommittee.map(pk => smallHexStr(pk))
+    // console.log('PROVERS:', proverInfosAsHex)
 
     if (proverInfos.length === 0) throw new Error("Failed to retrieve proverInfos");
     this.latestCommittee = proverInfos[0].syncCommittee;
     this.latestPeriod = currentPeriod;
     // console.log('proverInfos[0].syncCommittee',proverInfos[0].syncCommittee)
-  }
-
-  public async getNextValidExecutionInfo(
-    retry: number = 10,
-  ): Promise<ExecutionInfo> {
-    if (retry === 0)
-      throw new Error(
-        'no valid execution payload found in the given retry limit',
-      );
-    const ei = await this.getLatestExecution();
-    if (ei) return ei;
-    // delay for the next slot
-    await new Promise(resolve => setTimeout(resolve, POLLING_DELAY));
-    return this.getNextValidExecutionInfo(retry - 1);
   }
 
   public get isSynced() {
@@ -82,21 +76,22 @@ export abstract class BaseClient {
 
   // FIRST THE ENGINE SUBSCRIBES TO THE EXECUTION
   public async subscribe(callback: (ei: ExecutionInfo) => AsyncOrSync<void>) {
-    // NEXT THE ENGINE TRIES TO SINK
-    // AFTER 12 SECONDS IT REPEATS AFTER OTHER LOGIC
-    setInterval(async () => {
-      try {
-        await this.sync();
-        console.log('⏳ Optimistic Update - Verifying execution...')
-        const ei = await this.getLatestExecution();
-        if (ei && ei.blockhash !== this.latestBlockHash) {
-          this.latestBlockHash = ei.blockhash;
-          return await callback(ei);
+    let timeoutId: any;
+    const checkUpdates = async () => {
+        try {
+            await this.sync();
+            console.log('⏳ Optimistic Update - Verifying execution...')
+            const ei = await this.getLatestExecution();
+            if (ei && ei.blockhash !== this.latestBlockHash) {
+                this.latestBlockHash = ei.blockhash;
+                await callback(ei);
+            }
+            timeoutId = setTimeout(checkUpdates, POLLING_DELAY);
+        } catch (e) {
+            console.error(e);
         }
-      } catch (e) {
-        console.error(e);
-      }
-    }, POLLING_DELAY);
+    }
+    timeoutId = setTimeout(checkUpdates, POLLING_DELAY);
   }
 
   protected async getLatestExecution(): Promise<ExecutionInfo | null> {
@@ -104,16 +99,23 @@ export abstract class BaseClient {
     const opUp = this.optimisticUpdateFromJSON(data.data);
     const verify = await this.optimisticUpdateVerify(this.latestCommittee, opUp);
     if (!verify.correct) throw new Error(`🚫 Invalid Optimistic Update: ${verify.reason}`);
-    console.log(`✅ Optimistic Update - Slot ${data.data.attested_header.slot}, Header ${data.data.attested_header.body_root} VERIFIED !\n`);
+    console.log(`✅ Optimistic Update - VERIFIED - Slot ${data.data.attested_header.slot}, Header ${data.data.attested_header.body_root}\n`);
+    console.log('LATEST EXECUTION --->>',await this.getExecutionFromBlockRoot(data.data.attested_header.slot, data.data.attested_header.body_root),'\n')
     return this.getExecutionFromBlockRoot(data.data.attested_header.slot, data.data.attested_header.body_root);
   }
-// 
+
+  // LOTS OF LOGGING HERE
   protected async getExecutionFromBlockRoot(
     slot: bigint,
     expectedBlockRoot: Bytes32,
   ): Promise<ExecutionInfo> {
     const { data: { data: { message: { body: blockJSON } } } } = await axios.get(`${this.beaconChainAPIURL}/eth/v2/beacon/blocks/${slot}`);
+    // console.log(blockJSON)
+    const x = blockJSON.execution_payload;
+    // console.log(x)
     const block = bellatrix.ssz.BeaconBlockBody.fromJson(blockJSON);
+    // const types = guessAbiEncodedData(blockJSON);
+    // console.log(block)
     const blockRoot = toHexString(bellatrix.ssz.BeaconBlockBody.hashTreeRoot(block));
     if (blockRoot !== expectedBlockRoot) throw Error(`block provided by the beacon chain api doesn't match the expected block root`);
 
@@ -121,6 +123,21 @@ export abstract class BaseClient {
       blockhash: blockJSON.execution_payload.block_hash,
       blockNumber: blockJSON.execution_payload.block_number,
     };
+  }
+  
+  public async getNextValidExecutionInfo(): Promise<ExecutionInfo> {
+    let delay = POLLING_DELAY;
+    const MAX_DELAY = 15;
+    while (true) {
+    const ei = await this.getLatestExecution();
+    if (ei) return ei;
+    console.log('EXECUTION INFO',ei);
+
+    if (delay > MAX_DELAY) throw new Error('no valid execution payload found');
+    // delay for the next slot
+    await new Promise(resolve => setTimeout(resolve, delay));
+    delay = delay * 2;
+    }
   }
 
   protected getCommitteeHash(committee: Uint8Array[]): Uint8Array {

@@ -32,6 +32,7 @@
     "@lodestar/config": "^1.2.0",
     "@lodestar/light-client": "https://gitpkg.now.sh/shresthagrawal/lodestar/packages/light-client?b46d752f6bda6f8948d8a21179574cae3f02c109",
     "@lodestar/types": "^1.2.0",
+    "@samczsun/abi-guesser": "https://github.com/samczsun/abi-guesser",
     "axios": "0.27.2",
     "decimal.js": "10.4.1",
     "dotenv": "16.0.2",
