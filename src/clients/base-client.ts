@@ -111,11 +111,11 @@ export abstract class BaseClient {
       return null;
     }
     console.log(
-      `Optimistic update verified for slot ${updateJSON.attested_header.slot}`,
+      `Optimistic update verified for slot ${updateJSON.attested_header.beacon.slot}`,
     );
     return this.getExecutionFromBlockRoot(
-      updateJSON.attested_header.slot,
-      updateJSON.attested_header.body_root,
+      updateJSON.attested_header.beacon.slot,
+      updateJSON.attested_header.beacon.body_root,
     );
   }
 
