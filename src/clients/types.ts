@@ -1,4 +1,4 @@
-import { IBeaconConfig } from '@lodestar/config';
+import { BeaconConfig } from '@lodestar/config';
 import { PubKeyString, Slot } from '../types.js';
 
 export type GenesisData = {
@@ -9,7 +9,7 @@ export type GenesisData = {
 
 export type ClientConfig = {
   genesis: GenesisData;
-  chainConfig: IBeaconConfig;
+  chainConfig: BeaconConfig;
   // treeDegree in case of Superlight and batchSize in case of Light and Optimistic
   n?: number;
 };

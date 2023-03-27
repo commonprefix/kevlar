@@ -4,7 +4,7 @@ import * as altair from '@lodestar/types/altair';
 import * as phase0 from '@lodestar/types/phase0';
 import * as bellatrix from '@lodestar/types/bellatrix';
 import { digest } from '@chainsafe/as-sha256';
-import { IBeaconConfig } from '@lodestar/config';
+import { BeaconConfig } from '@lodestar/config';
 import type { PublicKey } from '@chainsafe/bls/types';
 import bls from '@chainsafe/bls/switchable';
 import { ListCompositeType, fromHexString, toHexString } from '@chainsafe/ssz';
@@ -31,7 +31,7 @@ export abstract class BaseClient {
   genesisCommittee: Uint8Array[];
   genesisPeriod: number;
   genesisTime: number;
-  chainConfig: IBeaconConfig;
+  chainConfig: BeaconConfig;
 
   latestCommittee: Uint8Array[];
   latestPeriod: number = -1;
@@ -170,7 +170,7 @@ export abstract class BaseClient {
     period: number,
     update: LightClientUpdate,
   ): Promise<false | Uint8Array[]> {
-    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
+    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.beacon.slot);
     if (period !== updatePeriod) {
       console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
       return false;
@@ -197,7 +197,7 @@ export abstract class BaseClient {
     period: number,
     update: LightClientUpdate,
   ): Promise<boolean> {
-    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.slot);
+    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.beacon.slot);
     if (period !== updatePeriod) {
       console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
       return false;
@@ -240,8 +240,8 @@ export abstract class BaseClient {
     //   throw Error(`header.slot ${header.slot} is too far in the future, currentSlot: ${this.currentSlot}`);
     // }
 
-    const period = computeSyncPeriodAtSlot(header.slot);
-    const headerBlockRoot = phase0.ssz.BeaconBlockHeader.hashTreeRoot(header);
+    const period = computeSyncPeriodAtSlot(header.beacon.slot);
+    const headerBlockRoot = phase0.ssz.BeaconBlockHeader.hashTreeRoot(header.beacon);
     const headerBlockRootHex = toHexString(headerBlockRoot);
     const committeeFast = this.deserializeSyncCommittee(committee);
     try {
@@ -250,7 +250,7 @@ export abstract class BaseClient {
         committeeFast,
         syncAggregate,
         headerBlockRoot,
-        header.slot,
+        header.beacon.slot,
       );
     } catch (e) {
       return { correct: false, reason: 'invalid signatures' };
