@@ -6,12 +6,12 @@ import {
   UintNumberType,
   ListCompositeType,
 } from '@chainsafe/ssz';
-import * as altair from '@lodestar/types/altair';
+import * as capella from '@lodestar/types/capella';
 import { BEACON_SYNC_COMMITTEE_SIZE } from './constants.js';
 
 const MAX_BATCHSIZE = 10000;
 
-export const LightClientUpdateSSZ = altair.ssz.LightClientUpdate;
+export const LightClientUpdateSSZ = capella.ssz.LightClientUpdate;
 export const LightClientUpdatesSSZ = new ListCompositeType(
   LightClientUpdateSSZ as any,
   MAX_BATCHSIZE,

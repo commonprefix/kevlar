@@ -35,7 +35,7 @@ export class LightClient extends BaseClient {
         const validOrCommittee = await this.syncUpdateVerifyGetCommittee(
           startCommittee,
           period,
-          update
+          update,
         );
 
         if (!(validOrCommittee as boolean)) {
@@ -49,7 +49,7 @@ export class LightClient extends BaseClient {
         if (this.store) await this.store.addUpdate(period, update);
         startCommittee = validOrCommittee as Uint8Array[];
       } catch (e) {
-        console.error(`failed to fetch sync update for period(${period})`);
+        console.error(`failed to fetch sync update for period(${period})`, e);
         return {
           syncCommittee: startCommittee,
           period,

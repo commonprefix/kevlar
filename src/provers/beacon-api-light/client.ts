@@ -1,5 +1,5 @@
 import { handleGETRequest } from '../../utils.js';
-import * as altair from '@lodestar/types/altair';
+import { LightClientUpdateSSZ } from '../../ssz.js';
 import { IProver } from '../../clients/light/iprover.js';
 import { LightClientUpdate } from '../../types.js';
 
@@ -7,9 +7,7 @@ import { LightClientUpdate } from '../../types.js';
 export class BeaconAPIProver implements IProver {
   cachedSyncUpdate: Map<number, LightClientUpdate> = new Map();
 
-  constructor(
-    protected serverURL: string
-  ) {}
+  constructor(protected serverURL: string) {}
 
   async _getSyncUpdates(
     startPeriod: number,
@@ -19,7 +17,7 @@ export class BeaconAPIProver implements IProver {
       `${this.serverURL}/eth/v1/beacon/light_client/updates?start_period=${startPeriod}&count=${maxCount}`,
       false,
     );
-    return res.map((u: any) => altair.ssz.LightClientUpdate.fromJson(u.data));
+    return res.map((u: any) => LightClientUpdateSSZ.fromJson(u.data));
   }
 
   async getSyncUpdate(

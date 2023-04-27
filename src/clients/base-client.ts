@@ -1,16 +1,18 @@
 import { AsyncOrSync } from 'ts-essentials';
 import axios from 'axios';
-import * as altair from '@lodestar/types/altair';
 import * as phase0 from '@lodestar/types/phase0';
 import * as bellatrix from '@lodestar/types/bellatrix';
+import * as capella from '@lodestar/types/capella';
+import { allForks } from '@lodestar/types';
 import { digest } from '@chainsafe/as-sha256';
-import { BeaconConfig } from '@lodestar/config';
+import { BeaconConfig, ChainForkConfig } from '@lodestar/config';
 import type { PublicKey } from '@chainsafe/bls/types';
 import bls from '@chainsafe/bls/switchable';
 import { ListCompositeType, fromHexString, toHexString } from '@chainsafe/ssz';
 import {
   computeSyncPeriodAtSlot,
   getCurrentSlot,
+  isValidMerkleBranch,
 } from '@lodestar/light-client/utils';
 import {
   assertValidLightClientUpdate,
@@ -18,6 +20,10 @@ import {
 } from '@lodestar/light-client/validation';
 import { SyncCommitteeFast } from '@lodestar/light-client/types';
 import { BEACON_SYNC_SUPER_MAJORITY, POLLING_DELAY } from './constants.js';
+import {
+  BLOCK_BODY_EXECUTION_PAYLOAD_DEPTH as EXECUTION_PAYLOAD_DEPTH,
+  BLOCK_BODY_EXECUTION_PAYLOAD_INDEX as EXECUTION_PAYLOAD_INDEX,
+} from '@lodestar/params';
 import { isCommitteeSame, concatUint8Array } from '../utils.js';
 import {
   ClientConfig,
@@ -113,33 +119,9 @@ export abstract class BaseClient {
     console.log(
       `Optimistic update verified for slot ${updateJSON.attested_header.beacon.slot}`,
     );
-    return this.getExecutionFromBlockRoot(
-      updateJSON.attested_header.beacon.slot,
-      updateJSON.attested_header.beacon.body_root,
-    );
-  }
-
-  protected async getExecutionFromBlockRoot(
-    slot: bigint,
-    expectedBlockRoot: Bytes32,
-  ): Promise<ExecutionInfo> {
-    const res = await axios.get(
-      `${this.beaconChainAPIURL}/eth/v2/beacon/blocks/${slot}`,
-    );
-    const blockJSON = res.data.data.message.body;
-    const block = bellatrix.ssz.BeaconBlockBody.fromJson(blockJSON);
-    const blockRoot = toHexString(
-      bellatrix.ssz.BeaconBlockBody.hashTreeRoot(block),
-    );
-    if (blockRoot !== expectedBlockRoot) {
-      throw Error(
-        `block provided by the beacon chain api doesn't match the expected block root`,
-      );
-    }
-
     return {
-      blockhash: blockJSON.execution_payload.block_hash,
-      blockNumber: blockJSON.execution_payload.block_number,
+      blockhash: updateJSON.attested_header.execution.block_hash,
+      blockNumber: updateJSON.attested_header.execution.block_number,
     };
   }
 
@@ -170,20 +152,20 @@ export abstract class BaseClient {
     period: number,
     update: LightClientUpdate,
   ): Promise<false | Uint8Array[]> {
-    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.beacon.slot);
+    const updatePeriod = computeSyncPeriodAtSlot(
+      update.attestedHeader.beacon.slot,
+    );
     if (period !== updatePeriod) {
-      console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
+      console.error(
+        `Expected update with period ${period}, but recieved ${updatePeriod}`,
+      );
       return false;
     }
 
     const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
     try {
       // check if the update has valid signatures
-      await assertValidLightClientUpdate(
-        this.chainConfig,
-        prevCommitteeFast,
-        update,
-      );
+      assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
       return update.nextSyncCommittee.pubkeys;
     } catch (e) {
       console.error(e);
@@ -197,9 +179,13 @@ export abstract class BaseClient {
     period: number,
     update: LightClientUpdate,
   ): Promise<boolean> {
-    const updatePeriod = computeSyncPeriodAtSlot(update.attestedHeader.beacon.slot);
+    const updatePeriod = computeSyncPeriodAtSlot(
+      update.attestedHeader.beacon.slot,
+    );
     if (period !== updatePeriod) {
-      console.error(`Expected update with period ${period}, but recieved ${updatePeriod}`);
+      console.error(
+        `Expected update with period ${period}, but recieved ${updatePeriod}`,
+      );
       return false;
     }
 
@@ -213,11 +199,7 @@ export abstract class BaseClient {
     const prevCommitteeFast = this.deserializeSyncCommittee(prevCommittee);
     try {
       // check if the update has valid signatures
-      await assertValidLightClientUpdate(
-        this.chainConfig,
-        prevCommitteeFast,
-        update,
-      );
+      assertValidLightClientUpdate(this.chainConfig, prevCommitteeFast, update);
       return true;
     } catch (e) {
       return false;
@@ -225,7 +207,7 @@ export abstract class BaseClient {
   }
 
   optimisticUpdateFromJSON(update: any): OptimisticUpdate {
-    return altair.ssz.LightClientOptimisticUpdate.fromJson(update);
+    return capella.ssz.LightClientOptimisticUpdate.fromJson(update);
   }
 
   async optimisticUpdateVerify(
@@ -233,35 +215,63 @@ export abstract class BaseClient {
     update: OptimisticUpdate,
   ): Promise<VerifyWithReason> {
     const { attestedHeader: header, syncAggregate } = update;
-
-    // TODO: fix this
-    // Prevent registering updates for slots to far ahead
-    // if (header.slot > slotWithFutureTolerance(this.config, this.genesisTime, MAX_CLOCK_DISPARITY_SEC)) {
-    //   throw Error(`header.slot ${header.slot} is too far in the future, currentSlot: ${this.currentSlot}`);
-    // }
-
-    const period = computeSyncPeriodAtSlot(header.beacon.slot);
-    const headerBlockRoot = phase0.ssz.BeaconBlockHeader.hashTreeRoot(header.beacon);
-    const headerBlockRootHex = toHexString(headerBlockRoot);
-    const committeeFast = this.deserializeSyncCommittee(committee);
     try {
-      await assertValidSignedHeader(
-        this.chainConfig,
-        committeeFast,
-        syncAggregate,
-        headerBlockRoot,
-        header.beacon.slot,
-      );
-    } catch (e) {
-      return { correct: false, reason: 'invalid signatures' };
-    }
+      // TODO: fix this
+      // Prevent registering updates for slots to far ahead
+      // if (header.slot > slotWithFutureTolerance(this.config, this.genesisTime, MAX_CLOCK_DISPARITY_SEC)) {
+      //   throw Error(`header.slot ${header.slot} is too far in the future, currentSlot: ${this.currentSlot}`);
+      // }
 
-    const participation =
-      syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
-    if (participation < BEACON_SYNC_SUPER_MAJORITY) {
-      return { correct: false, reason: 'insufficient signatures' };
+      const period = computeSyncPeriodAtSlot(header.beacon.slot);
+      const headerBlockRoot = phase0.ssz.BeaconBlockHeader.hashTreeRoot(
+        header.beacon,
+      );
+      const headerBlockRootHex = toHexString(headerBlockRoot);
+      const committeeFast = this.deserializeSyncCommittee(committee);
+      try {
+        assertValidSignedHeader(
+          this.chainConfig,
+          committeeFast,
+          syncAggregate,
+          headerBlockRoot,
+          header.beacon.slot,
+        );
+      } catch (e) {
+        return { correct: false, reason: 'invalid signatures' };
+      }
+
+      const participation =
+        syncAggregate.syncCommitteeBits.getTrueBitIndexes().length;
+      if (participation < BEACON_SYNC_SUPER_MAJORITY) {
+        return { correct: false, reason: 'insufficient signatures' };
+      }
+
+      if (!this.isValidLightClientHeader(this.chainConfig, header)) {
+        return { correct: false, reason: 'invalid header' };
+      }
+
+      return { correct: true };
+    } catch (e) {
+      console.error(e);
+      return { correct: false, reason: e.message };
     }
-    return { correct: true };
+  }
+
+  isValidLightClientHeader(
+    config: ChainForkConfig,
+    header: allForks.LightClientHeader,
+  ): boolean {
+    return isValidMerkleBranch(
+      config
+        .getExecutionForkTypes(header.beacon.slot)
+        .ExecutionPayloadHeader.hashTreeRoot(
+          (header as capella.LightClientHeader).execution,
+        ),
+      (header as capella.LightClientHeader).executionBranch,
+      EXECUTION_PAYLOAD_DEPTH,
+      EXECUTION_PAYLOAD_INDEX,
+      header.beacon.bodyRoot,
+    );
   }
 
   getCurrentPeriod(): number {
