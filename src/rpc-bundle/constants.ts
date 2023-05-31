@@ -15,8 +15,8 @@ export const defaultProvers: {
     1: [
       'https://light-optimistic-mainnet-1.herokuapp.com',
       'https://light-optimistic-mainnet-2.herokuapp.com',
-      'https://eth-rpc-proxy.herokuapp.com',
-      'https://kevlar-tzinas.herokuapp.com',
+      // 'https://eth-rpc-proxy.herokuapp.com',
+      // 'https://kevlar-tzinas.herokuapp.com',
     ],
     5: [
       'https://light-optimistic-goerli-1.herokuapp.com',
