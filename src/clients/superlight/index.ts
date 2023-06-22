@@ -137,7 +137,7 @@ export class SuperlightClient extends BaseClient {
     index: number = 0,
   ): Promise<boolean | number> {
     // if (nodeInfo1.isLeaf !== nodeInfo2.isLeaf)
-    //   throw new Error('tree of unequal heights recieved');
+    //   throw new Error('tree of unequal heights received');
 
     // if you reach the leaf then this is the first point of disagreement
     if (stepsToLeafs === 0) {

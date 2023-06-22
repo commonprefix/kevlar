@@ -20,7 +20,7 @@ export class MerkleTree {
 
   init(leaves: Uint8Array[]) {
     const l = leaves.length;
-    if (!l) throw new Error(`there should be atleast one leaf`);
+    if (!l) throw new Error(`there should be at least one leaf`);
 
     if (l !== this.n ** logFloor(l, this.n))
       throw new Error(`leaves should be exact power of n(${this.n})`);

@@ -12,7 +12,7 @@ npm i -g @lightclients/kevlar
 kevlar
 ```
 
-The PRC is now available at `http://localhost:8546`. Add this local network to metamask.
+The RPC is now available at `http://localhost:8546`. Add this local network to MetaMask.
 
 ```bash
 kevlar --help
@@ -43,7 +43,7 @@ cp .env.example .env
 yarn start
 ```
 
-### Deploy Server to heroku
+### Deploy Server to Heroku
 
 ```bash
 bash src/provers/light-optimistic/deploy-heroku.sh <heroku-app-name>

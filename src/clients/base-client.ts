@@ -111,7 +111,7 @@ export abstract class BaseClient {
       this.latestCommittee,
       update,
     );
-    // TODO: check the update agains the latest sync commttee
+    // TODO: check the update against the latest sync committee
     if (!verify.correct) {
       console.error(`Invalid Optimistic Update: ${verify.reason}`);
       return null;
@@ -133,7 +133,7 @@ export abstract class BaseClient {
     return pubkeys.map(pk => bls.PublicKey.fromBytes(pk));
   }
 
-  // This function is ovveride of the original function in
+  // This function is override of the original function in
   // @chainsafe/lodestar-light-client/lib/utils/utils
   // this was required as the light client doesn't have access
   // to aggregated signatures
@@ -157,7 +157,7 @@ export abstract class BaseClient {
     );
     if (period !== updatePeriod) {
       console.error(
-        `Expected update with period ${period}, but recieved ${updatePeriod}`,
+        `Expected update with period ${period}, but received ${updatePeriod}`,
       );
       return false;
     }
@@ -184,7 +184,7 @@ export abstract class BaseClient {
     );
     if (period !== updatePeriod) {
       console.error(
-        `Expected update with period ${period}, but recieved ${updatePeriod}`,
+        `Expected update with period ${period}, but received ${updatePeriod}`,
       );
       return false;
     }
