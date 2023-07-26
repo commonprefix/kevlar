@@ -1,6 +1,6 @@
 {
   "name": "@lightclients/kevlar",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Light client-based RPC Proxy for PoS Ethereum",
   "main": "dist/index.js",
   "repository": {
