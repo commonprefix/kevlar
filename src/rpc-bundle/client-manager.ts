@@ -55,7 +55,7 @@ export class ClientManager {
     );
     this.client.subscribe(ei => {
       console.log(
-        `Recieved a new blockheader: ${ei.blockNumber} ${ei.blockhash}`,
+        `Received a new blockheader: ${ei.blockNumber} ${ei.blockhash}`,
       );
       provider.update(ei.blockhash, ei.blockNumber);
     });
