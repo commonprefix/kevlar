@@ -11,7 +11,7 @@ export class MerkleMountainRange {
 
   init(leaves: Uint8Array[]) {
     const l = leaves.length;
-    if (!l) throw new Error(`there should be atleast one leaf`);
+    if (!l) throw new Error(`there should be at least one leaf`);
 
     let leftL = l;
     const rootHashes = [];
