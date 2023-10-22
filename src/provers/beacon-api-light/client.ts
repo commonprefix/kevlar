@@ -28,7 +28,7 @@ export class BeaconAPIProver implements IProver {
     const _cacheCount = Math.min(currentPeriod - period + 1, cacheCount);
     if (!this.cachedSyncUpdate.has(period)) {
       const vals = await this._getSyncUpdates(period, _cacheCount);
-      for (let i = 0; i < _cacheCount; i++) {
+      for (let i = 0; i < vals.length; i++) {
         this.cachedSyncUpdate.set(period + i, vals[i]);
       }
     }
