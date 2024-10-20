@@ -14,7 +14,7 @@ export class ClientManager {
   client: BaseClient;
 
   constructor(
-    protected chain: Chain,
+    protected chain: Chain.Mainnet | Chain.Sepolia,
     clientType: ClientType,
     beaconChainAPIURL: string,
     protected providerURL: string,

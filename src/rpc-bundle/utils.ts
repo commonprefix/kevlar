@@ -1,20 +1,24 @@
-import { readFileSync } from 'fs';
 import { createBeaconConfig } from '@lodestar/config';
 import { fromHexString } from '@chainsafe/ssz';
 import { networksChainConfig } from '@lodestar/config/networks';
-import { goerliConfig } from './bootstrap-data/goerli.js';
+import { Chain } from '@ethereumjs/common';
 import { mainnetConfig } from './bootstrap-data/mainnet.js';
+import { NETWORK_NAMES } from './constants.js';
+import { sepoliaConfig } from './bootstrap-data/sepolia.js';
 
 const bootstrapDataMap: { [network: number]: any } = {
-  1: mainnetConfig,
-  5: goerliConfig,
+  [Chain.Mainnet]: mainnetConfig,
+  [Chain.Sepolia]: sepoliaConfig,
 };
 
-export function getDefaultClientConfig(chain: number, n?: number) {
+export function getDefaultClientConfig(
+  chain: Chain.Mainnet | Chain.Sepolia,
+  n?: number,
+) {
   const bootstrapData = bootstrapDataMap[chain];
   if (!bootstrapData)
     throw new Error(`bootstrapData not found for chain ${chain}`);
-  const networkName = chain === 1 ? 'mainnet' : 'goerli';
+  const networkName = NETWORK_NAMES[chain];
   const chainConfig = createBeaconConfig(
     networksChainConfig[networkName],
     fromHexString(bootstrapData.genesis_validator_root),
