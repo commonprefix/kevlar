@@ -5,6 +5,7 @@ dotenv.config();
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { Chain } from '@ethereumjs/common';
 import { startServer } from '@lightclients/patronum';
 import { ClientManager } from './client-manager.js';
 import { ClientType } from '../constants.js';
@@ -24,8 +25,8 @@ async function main() {
     const argv = await yargs(hideBin(process.argv))
       .option('network', {
         alias: 'n',
-        choices: [1, 5],
-        description: 'chain id to start the proxy on (1, 5)',
+        choices: [Chain.Mainnet, Chain.Sepolia],
+        description: `chain id to start the proxy on (${Chain.Mainnet}, ${Chain.Sepolia})`,
       })
       .option('client', {
         alias: 'c',
@@ -51,8 +52,10 @@ async function main() {
       })
       .parse();
 
-    const network = argv.network || parseInt(process.env.CHAIN_ID || '1');
-    const port = argv.port || (network === 5 ? 8547 : 8546);
+    const network =
+      argv.network ||
+      (process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : Chain.Mainnet);
+    const port = argv.port || (network === Chain.Sepolia ? 8547 : 8546);
     const clientType =
       argv.client === 'light' ? ClientType.light : ClientType.optimistic;
     const proverURLs = defaultProvers[clientType][network].concat(

@@ -19,7 +19,7 @@ kevlar --help
 Options:
       --help        Show help                                          [boolean]
       --version     Show version number                                [boolean]
-  -n, --network     chain id to start the proxy on (1, 5)        [choices: 1, 5]
+  -n, --network     chain id to start the proxy on (1, 11155111)        [choices: 1, 11155111]
   -c, --client      type of the client          [choices: "light", "optimistic"]
   -o, --provers     comma separated prover urls
   -u, --rpc         rpc url to proxy

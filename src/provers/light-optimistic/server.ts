@@ -104,7 +104,7 @@ export async function startServer(
   const httpServer = http.createServer();
 
   httpServer.setTimeout(1000 * 20); // 20s
-  httpServer.on('request', await getApp(network, beaconAPIURL));
+  httpServer.on('request', getApp(network, beaconAPIURL));
 
   httpServer.listen(port, function () {
     console.log(`Server listening on port ${port}`);

@@ -1,6 +1,6 @@
 {
   "name": "@lightclients/kevlar",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Light client-based RPC Proxy for PoS Ethereum",
   "main": "dist/index.js",
   "repository": {
@@ -20,30 +20,32 @@
     "prettier": "2.6.2",
     "pretty-quick": "3.1.3",
     "ts-essentials": "9.1.2",
-    "ts-node": "10.9.1",
+    "tsx": "^4.19.1",
     "typescript": "^4.6.3"
   },
   "dependencies": {
     "@chainsafe/as-sha256": "0.4.1",
     "@chainsafe/bls": "7.1.1",
     "@chainsafe/ssz": "0.11.1",
-    "@lightclients/patronum": "0.2.0",
-    "@lodestar/api": "1.7.2",
-    "@lodestar/config": "1.7.2",
-    "@lodestar/light-client": "1.7.2",
-    "@lodestar/types": "1.7.2",
+    "@ethereumjs/common": "4.3.0",
+    "@lightclients/patronum": "0.3.1",
+    "@lodestar/api": "1.22.0",
+    "@lodestar/config": "1.22.0",
+    "@lodestar/light-client": "1.22.0",
+    "@lodestar/types": "1.22.0",
     "axios": "0.27.2",
     "decimal.js": "10.4.1",
     "dotenv": "16.0.2",
     "eth-rpc-errors": "4.0.3",
     "json-rpc-engine": "6.1.0",
+    "rust-verkle-wasm": "^0.0.1",
     "yargs": "17.5.1"
   },
   "scripts": {
     "build": "tsc",
     "prepack": "npm run build",
     "start": "node ./dist/provers/start-server.js",
-    "rpc-proxy": "npx ts-node ./src/rpc-bundle/start-rpc.ts"
+    "rpc-proxy": "tsx ./src/rpc-bundle/start-rpc.ts"
   },
   "bin": {
     "kevlar": "dist/rpc-bundle/start-rpc.js",
