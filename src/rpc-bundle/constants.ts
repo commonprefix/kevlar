@@ -18,11 +18,13 @@ export const defaultProvers: {
     [Chain.Mainnet]: [
       'https://light-optimistic-mainnet-1.herokuapp.com',
       'https://light-optimistic-mainnet-2.herokuapp.com',
+      'https://light-optimistic-mainnet-3-d4577fd43986.herokuapp.com',
     ],
     [Chain.Sepolia]: [
       // TODO setup for sepolia
-      'https://light-optimistic-goerli-1.herokuapp.com',
-      'https://light-optimistic-goerli-2.herokuapp.com',
+      'https://light-optimistic-sepolia-1.herokuapp.com',
+      'https://light-optimistic-sepolia-2.herokuapp.com',
+      'https://light-optimistic-sepolia-3-4bee54a5f897.herokuapp.com',
     ],
   },
   [ClientType.light]: {
