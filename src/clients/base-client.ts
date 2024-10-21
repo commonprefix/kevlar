@@ -1,9 +1,7 @@
 import { AsyncOrSync } from 'ts-essentials';
 import axios from 'axios';
 import * as phase0 from '@lodestar/types/phase0';
-import * as bellatrix from '@lodestar/types/bellatrix';
-import * as capella from '@lodestar/types/capella';
-import { allForks } from '@lodestar/types';
+import * as deneb from '@lodestar/types/deneb';
 import { digest } from '@chainsafe/as-sha256';
 import { BeaconConfig, ChainForkConfig } from '@lodestar/config';
 import type { PublicKey } from '@chainsafe/bls/types';
@@ -207,7 +205,7 @@ export abstract class BaseClient {
   }
 
   optimisticUpdateFromJSON(update: any): OptimisticUpdate {
-    return capella.ssz.LightClientOptimisticUpdate.fromJson(update);
+    return deneb.ssz.LightClientOptimisticUpdate.fromJson(update);
   }
 
   async optimisticUpdateVerify(
@@ -259,15 +257,15 @@ export abstract class BaseClient {
 
   isValidLightClientHeader(
     config: ChainForkConfig,
-    header: allForks.LightClientHeader,
+    header: deneb.LightClientHeader,
   ): boolean {
     return isValidMerkleBranch(
       config
         .getExecutionForkTypes(header.beacon.slot)
         .ExecutionPayloadHeader.hashTreeRoot(
-          (header as capella.LightClientHeader).execution,
+          (header as deneb.LightClientHeader).execution,
         ),
-      (header as capella.LightClientHeader).executionBranch,
+      (header as deneb.LightClientHeader).executionBranch,
       EXECUTION_PAYLOAD_DEPTH,
       EXECUTION_PAYLOAD_INDEX,
       header.beacon.bodyRoot,
