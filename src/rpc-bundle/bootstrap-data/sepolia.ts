@@ -1,3 +1,4 @@
+// See gen-comittee-pks.js for the generation.
 export const sepoliaConfig = {
   genesis_time: '1655733600',
   genesis_validator_root:

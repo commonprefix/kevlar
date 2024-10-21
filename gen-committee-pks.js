@@ -2,7 +2,7 @@
 // Used for RPC bootstrap data.
 //
 // Usage:
-// node extract_pks.js <network> <slot>
+// node gen-comittee-pks.js <network> <slot>
 import fs from 'fs';
 import path from 'path';
 
@@ -91,7 +91,7 @@ const network = args[0];
 const slot = parseInt(args[1], 10);
 
 if (!network || isNaN(slot)) {
-  console.error('Usage: node extract_pks.js <network> <slot>');
+  console.error('Usage: node gen-comittee-pks.js <network> <slot>');
   process.exit(1);
 }
 

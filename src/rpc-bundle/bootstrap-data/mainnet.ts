@@ -1,3 +1,4 @@
+// See gen-comittee-pks.js for the generation.
 export const mainnetConfig = {
   genesis_time: '1606824023',
   genesis_validator_root:
