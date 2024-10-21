@@ -47,7 +47,7 @@ export class ClientManager {
     await this.client.sync();
     const { blockhash, blockNumber } =
       await this.client.getNextValidExecutionInfo();
-    const provider = new VerifyingProvider(
+    const provider = await VerifyingProvider.create(
       this.providerURL,
       blockNumber,
       blockhash,

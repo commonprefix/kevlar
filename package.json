@@ -27,6 +27,7 @@
     "@chainsafe/as-sha256": "0.4.1",
     "@chainsafe/bls": "7.1.1",
     "@chainsafe/ssz": "0.11.1",
+    "@ethereumjs/common": "4.3.0",
     "@lightclients/patronum": "0.2.0",
     "@lodestar/api": "1.7.2",
     "@lodestar/config": "1.7.2",
