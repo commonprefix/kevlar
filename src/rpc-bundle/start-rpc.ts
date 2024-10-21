@@ -26,7 +26,7 @@ async function main() {
       .option('network', {
         alias: 'n',
         choices: [Chain.Mainnet, Chain.Sepolia],
-        description: 'chain id to start the proxy on (1, 5)',
+        description: `chain id to start the proxy on (${Chain.Mainnet}, ${Chain.Sepolia})`,
       })
       .option('client', {
         alias: 'c',
