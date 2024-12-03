@@ -32,15 +32,15 @@ Options:
 Clone the repo and perform the following commands
 
 ```bash
-yarn install
-yarn build
+npm install
+npm run build
 ```
 
 ### Run Server
 
 ```bash
 cp .env.example .env
-yarn start
+npm start
 ```
 
 ### Deploy Server to Heroku

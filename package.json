@@ -32,6 +32,7 @@
     "@lodestar/api": "1.22.0",
     "@lodestar/config": "1.22.0",
     "@lodestar/light-client": "1.22.0",
+    "@lodestar/params": "1.22.0",
     "@lodestar/types": "1.22.0",
     "axios": "0.27.2",
     "decimal.js": "10.4.1",
